@@ -1,0 +1,28 @@
+# Base image with common development tools
+FROM ubuntu:22.04
+
+# Avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install essential tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    python3 \
+    python3-pip \
+    nodejs \
+    npm \
+    golang \
+    vim \
+    nano \
+    && rm -rf /var/lib/apt/lists/* 
+
+# Set up a non-root user for security
+RUN useradd -m -s /bin/bash sandbox_user
+USER sandbox_user
+WORKDIR /home/sandbox_user/workspace
+
+# Set default command to keep container running
+CMD ["tail", "-f", "/dev/null"]

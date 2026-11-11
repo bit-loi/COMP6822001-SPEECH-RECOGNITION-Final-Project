@@ -1,0 +1,48 @@
+# ===== Python virtual environments =====
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ===== Python cache =====
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ===== Distribution / packaging =====
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ===== Logs =====
+*.log
+
+# ===== Unit test / coverage =====
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# ===== IDE / Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== Environment variables =====
+.env
+.env.*
+
+# ===== Executables and Temporary Files =====
+*.exe
+*.txt
