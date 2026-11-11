@@ -1,0 +1,35 @@
+{
+  "SVM_RBF": {
+    "accuracy": 0.6343480236256247,
+    "macro_f1": 0.6278469887783359,
+    "training_seconds": 199.42535059992224,
+    "test_prediction_seconds": 73.05388109991327,
+    "average_batch_ms_per_record": 6.638244534294709,
+    "median_single_record_ms": 7.197999977506697,
+    "training_examples": 84843,
+    "test_examples": 11005,
+    "model_file": "models\\SVM_RBF.joblib"
+  },
+  "Random_Forest": {
+    "accuracy": 0.4943207632894139,
+    "macro_f1": 0.47023331341313346,
+    "training_seconds": 25.292004000162706,
+    "test_prediction_seconds": 9.635030300123617,
+    "average_batch_ms_per_record": 0.8755138846091428,
+    "median_single_record_ms": 29.0524500887841,
+    "training_examples": 84843,
+    "test_examples": 11005,
+    "model_file": "models\\Random_Forest.joblib"
+  },
+  "KNN": {
+    "accuracy": 0.3630168105406633,
+    "macro_f1": 0.3635594386836604,
+    "training_seconds": 0.20237630000337958,
+    "test_prediction_seconds": 1.3502609999850392,
+    "average_batch_ms_per_record": 0.12269522943980367,
+    "median_single_record_ms": 4.732499946840107,
+    "training_examples": 84843,
+    "test_examples": 11005,
+    "model_file": "models\\KNN.joblib"
+  }
+}

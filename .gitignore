@@ -1,0 +1,8 @@
+.env
+venv/
+__pycache__/
+node_modules/
+*.pt
+*.ckpt
+*.h5
+data/
