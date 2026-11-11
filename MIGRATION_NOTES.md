@@ -101,3 +101,55 @@ confirm all three tests fail without the fix, then restored it.
   exceptions so dependency changes are tracked from now on. This is the only
   `.gitignore` change. `requirements.txt` is therefore newly tracked in this
   commit, in its pre-migration state; Phase 3 trims it.
+
+## Phase 3: remove Gemini STT, add the classifier interface
+
+### Removed
+- `POST /api/voice/stt` (Gemini multimodal transcription) and
+  `POST /api/voice/transcribe-audio` (a second, duplicate Gemini transcription
+  endpoint that the task did not list but that called the same method).
+- `GeminiService.transcribe_audio`.
+- `_do_transcribe` and `recognizer = sr.Recognizer()` in `routers/voice.py`.
+  Nothing called them, but they used `recognize_google()`, i.e. Google's cloud
+  speech API, which breaks the "no external/cloud APIs" rule by itself.
+- The `pydub`/`ffmpeg.exe` bootstrap block and the now-dead imports
+  (`speech_recognition`, `io`, `os`, `asyncio`, `UploadFile`).
+- Dependencies `SpeechRecognition`, `pydub` and `python-multipart` from
+  `backend-python/requirements.txt` (`python-multipart` was only needed for the
+  `UploadFile` endpoints). ffmpeg is no longer a prerequisite.
+
+### Kept (Gemini usage that is not speech-to-text)
+- `POST /api/voice/enhance-transcript` -> `GeminiService.enhance_voice_transcript`
+  (text in, text out; fixed in Phase 2). The frontend stops calling it in Phase 7,
+  but the route stays because the task said to keep transcript enhancement.
+- `POST /api/voice/process` and `/process-stream` (`classify_intent`,
+  `generate_code`, `modify_code`, `explain_code`): take a transcript *string*.
+  They no longer have a speech source, so they are only reachable with typed text.
+- `GeminiService.generate_embedding`, `chat_with_context`, `extract_insight`, and
+  `services/agent_executor.py` (function-calling chat agent) plus
+  `services/memory_service.py`: the AI chat/memory features.
+- `google-generativeai` dependency and `GEMINI_API_KEY`.
+
+These keep calling Gemini, a cloud API. The "no cloud APIs" constraint was applied
+to the speech-recognition path only. The editor's chat agent still needs Gemini,
+and the code runner still posts to the public Piston API (`backend-go/handlers/compiler.go`).
+Say so if you want those removed as well.
+
+### Added
+- `backend-python/services/classifier.py`: `Classifier` `typing.Protocol`
+  (`labels`, `feature_dim`, `predict(features) -> ClassifierOutput`), structural so a
+  real model needs no inheritance, plus a docstring showing how to plug one in.
+- `backend-python/models/classifier_schemas.py`: `ClassifierOutput` / `TopKEntry`
+  pydantic models. **Placement note:** the task lists the output contract under
+  Phase 5, but the interface's return type depends on it, so the pydantic models
+  were introduced here. Phase 5 adds the Go mirror, the stub and the contract tests.
+- Tests: `tests/test_stt_removed.py` (endpoints gone, no leftovers, deps gone,
+  text routes kept) and `tests/test_classifier_interface.py`.
+- Smoke check: importing the full FastAPI app (all routers) with dummy env vars
+  works; voice routes are `enhance-transcript`, `process`, `process-stream`.
+
+### Observation (not changed)
+The pins in `requirements.txt` do not match what is installed in the local venv
+(e.g. `fastapi==0.104.1` vs 0.128.0 installed, `pydantic==2.5.0` vs 2.12.5,
+`google-generativeai==0.3.2` vs 0.8.6). I did not check whether the file resolves
+with a fresh `pip install -r`.

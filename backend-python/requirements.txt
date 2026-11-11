@@ -4,7 +4,6 @@ google-generativeai==0.3.2
 supabase==2.0.3
 pydantic==2.5.0
 python-dotenv==1.0.0
-python-multipart==0.0.6
 asyncpg==0.29.0
 PyGithub
 slowapi
@@ -13,5 +12,3 @@ requests
 pydantic-settings
 mcp
 gitpython
-SpeechRecognition
-pydub

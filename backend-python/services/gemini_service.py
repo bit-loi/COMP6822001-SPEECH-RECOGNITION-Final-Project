@@ -290,48 +290,6 @@ Keep explanation clear and helpful.
         )
         return result['embedding']
 
-    async def transcribe_audio(
-        self,
-        audio_bytes: bytes,
-        mime_type: str = "audio/webm"
-    ) -> str:
-        """
-        Transcribe audio using Gemini's multimodal API.
-        Works with audio/webm, audio/ogg, audio/wav from MediaRecorder.
-        Does NOT require Chrome's Web Speech API or Google Speech servers.
-        """
-        import base64
-
-        # Encode audio bytes as base64 for inline blob
-        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-
-        prompt_parts = [
-            {
-                "inline_data": {
-                    "mime_type": mime_type,
-                    "data": audio_b64
-                }
-            },
-            "Transcribe this audio recording exactly as spoken. "
-            "It might be in English, Indonesian, or a mix of both with technical terms. "
-            "Return ONLY the transcription text, nothing else. "
-            "If you cannot understand the audio, return an empty string."
-        ]
-
-        try:
-            response = await asyncio.to_thread(
-                self.model.generate_content,
-                prompt_parts
-            )
-            transcript = response.text.strip()
-            # Remove common filler phrases Gemini might add
-            for filler in ["The audio says:", "Transcription:", "Audio transcription:"]:
-                if transcript.startswith(filler):
-                    transcript = transcript[len(filler):].strip()
-            return transcript
-        except Exception as e:
-            raise Exception(f"Audio transcription failed: {str(e)}")
-
     async def enhance_voice_transcript(
         self,
         raw_transcript: str,
