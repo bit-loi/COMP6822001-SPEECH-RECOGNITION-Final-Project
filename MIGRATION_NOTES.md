@@ -200,3 +200,53 @@ constructor / env / JSON threshold precedence, bad thresholds, exact-match
 labels, `map_output`, defensive copies, serialised shape, and malformed-map
 validation. The expectations are written out independently of the JSON; changing
 `backward` to `redo` in the JSON makes two tests fail (checked, then restored).
+
+## Phase 5: output contract and stub classifier
+
+### Contract
+```json
+{"label": "go", "confidence": 0.93,
+ "top_k": [{"label": "go", "confidence": 0.93}],
+ "inference_ms": 1.2}
+```
+- Python: `ClassifierOutput` / `TopKEntry` in `backend-python/models/classifier_schemas.py`
+  (pydantic; introduced in Phase 3 together with the interface that returns it).
+- Go: `ClassifierOutput` / `TopKEntry` in `backend-go/voice/classifier.go`, plus the
+  `Classifier` interface.
+- Both validate the same rules: probabilities in `[0, 1]`, `inference_ms >= 0`,
+  `top_k` non-empty, ranked best-first, and `top_k[0]` equal to the predicted
+  label/confidence, so a real model that breaks the contract fails loudly.
+- Feature input is the 78-dim pooled vector (`FeatureDim` in
+  `backend-go/voice/params.go`, `FEATURE_DIM` in `services/classifier.py`):
+  39 channel means followed by 39 channel standard deviations, channels ordered
+  `[13 MFCC, 13 delta, 13 delta-delta]`.
+
+### StubClassifier (Python `services/stub_classifier.py`, Go `voice/stub.go`)
+Deterministic fake used for end-to-end testing. It is **not** a recogniser: its
+output says nothing about what was spoken.
+- **Hash mode** (default): label, confidence and top-k are a pure function of the
+  features (SHA-256 of the little-endian float32 bytes, integer arithmetic only).
+  Confidence lands in 0.50-0.99, so with the default 0.75 threshold a demo shows
+  executed commands, ignored no-action words and below-threshold results.
+- **Script mode**: cycles through given labels at a fixed confidence, to fire one
+  specific editor action on demand.
+- The Go and Python stubs implement the same algorithm, and **three golden vectors
+  are pinned in both test suites** (one deliberately uses non-exactly-representable
+  floats to exercise float32 rounding), so they agree bit-for-bit. The Go values
+  were checked against output produced by the Python implementation.
+- Tests: Python 67, Go 20 (in `voice/` so far).
+
+### About the real model (context discovered in the repo)
+- The root `models.py` trains SVM-RBF / Random Forest / KNN on exactly this pooled
+  78-dim vector (`pool_features`). The root `*_classification_report.json` files
+  show those baselines are **35-class models** (no `silence` / `unknown`):
+  SVM 63.4%, Random Forest 49.4%, KNN 36.3% accuracy on 11,005 test clips.
+- The target is 37 classes, so the real model has to be **retrained with `silence`
+  and `unknown` examples**. The label list (`Labels()` / `SPEECH_COMMANDS_LABELS`)
+  is the 35 keywords + `silence` + `unknown`, alphabetical, which is what
+  `sorted(np.unique(y))` yields in `models.py` if those classes are named exactly
+  `silence` and `unknown`. If the dataset names them differently (e.g. `_silence_`),
+  the class order and `command_map.json` must be adapted.
+- The script that produced `data/dataset.npz` (the training features) is **not in
+  the repo**, so the training-side MFCC parameters could not be read from code. See
+  the Phase 6 section for the parameters chosen and the matching Python call.
