@@ -22,7 +22,7 @@ interface MemoryDB extends DBSchema {
   };
 }
 
-const DB_NAME = 'neuravity-memory';
+const DB_NAME = 'ambatucode-memory';
 const DB_VERSION = 1;
 
 /**

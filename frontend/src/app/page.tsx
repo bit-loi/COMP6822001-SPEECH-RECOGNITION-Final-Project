@@ -53,7 +53,7 @@ export default function EditorPage() {
 
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('neuravity_chat_history');
+      const saved = sessionStorage.getItem('ambatucode_chat_history');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -78,7 +78,7 @@ export default function EditorPage() {
   // Persist messages to sessionStorage
   useEffect(() => {
     if (mounted) {
-      sessionStorage.setItem('neuravity_chat_history', JSON.stringify(messages));
+      sessionStorage.setItem('ambatucode_chat_history', JSON.stringify(messages));
     }
   }, [messages, mounted]);
 
@@ -644,7 +644,7 @@ export default function EditorPage() {
         setCode(content);
       } else {
         setCurrentFilePath('');
-        setCode('// Welcome to Neuravity!');
+        setCode('// Welcome to AmbatuCode!');
       }
     }
   };
@@ -722,7 +722,7 @@ export default function EditorPage() {
           setCode(content);
         } else {
           setCurrentFilePath('');
-          setCode('// Welcome to Neuravity!');
+          setCode('// Welcome to AmbatuCode!');
         }
       }
     }
@@ -1159,8 +1159,8 @@ export default function EditorPage() {
                 height="100%"
                 defaultLanguage="typescript"
                 language={getMonacoLanguage(currentFilePath)}
-                defaultValue="// Welcome to Neuravity!\n// Upload files or create new ones to get started."
-                theme={mounted && resolvedTheme === 'light' ? 'neuravity-light' : 'neuravity-dark'}
+                defaultValue="// Welcome to AmbatuCode!\n// Upload files or create new ones to get started."
+                theme={mounted && resolvedTheme === 'light' ? 'ambatucode-light' : 'ambatucode-dark'}
                 value={code}
                 beforeMount={handleEditorWillMount}
                 onMount={handleEditorDidMount}

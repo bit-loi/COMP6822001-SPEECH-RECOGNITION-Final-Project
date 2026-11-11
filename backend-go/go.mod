@@ -1,4 +1,4 @@
-module neuravity-engine
+module ambatucode-engine
 
 go 1.25.1
 

@@ -1,5 +1,5 @@
 /**
- * Neuravity Memory System
+ * AmbatuCode Memory System
  * 
  * Three-tier memory system to reduce context switching for neurodivergent developers
  */

@@ -1,9 +1,9 @@
 /**
- * Configuration constants for Neuravity
+ * Configuration constants for AmbatuCode
  */
 
 export const APP_CONFIG = {
-  name: "Neuravity",
+  name: "AmbatuCode",
   version: "0.1.0",
   description: "A neurodivergent-friendly code editor",
 } as const;
@@ -84,12 +84,12 @@ export const EMOTIONAL_STATES = {
 } as const;
 
 export const STORAGE_KEYS = {
-  editorConfig: "neuravity-editor-config",
-  sensorySettings: "neuravity-sensory-settings",
-  tasks: "neuravity-tasks",
-  userPreferences: "neuravity-user-preferences",
-  sessions: "neuravity-sessions",
-  achievements: "neuravity-achievements",
+  editorConfig: "ambatucode-editor-config",
+  sensorySettings: "ambatucode-sensory-settings",
+  tasks: "ambatucode-tasks",
+  userPreferences: "ambatucode-user-preferences",
+  sessions: "ambatucode-sessions",
+  achievements: "ambatucode-achievements",
 } as const;
 
 export const FEATURE_FLAGS = {

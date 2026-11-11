@@ -1,5 +1,5 @@
 """
-Neuravity Agent Executor
+AmbatuCode Agent Executor
 ─────────────────────────
 Uses Gemini Function Calling (real tool use) so the AI can:
   - create / read / write files in the editor
@@ -480,7 +480,7 @@ File content preview:
 ```
 """
 
-        system_prompt = f"""You are Neuravity, an AI coding assistant that can TAKE REAL ACTIONS in the user's code editor.
+        system_prompt = f"""You are AmbatuCode, an AI coding assistant that can TAKE REAL ACTIONS in the user's code editor.
 
 {context}
 
@@ -569,7 +569,7 @@ User: {message}
                 model_name="gemini-2.0-flash",
                 generation_config={"temperature": 0.3, "max_output_tokens": 4096},
             )
-            fallback_prompt = f"{context}\n\nUser: {message}\n\nRespond as Neuravity AI assistant."
+            fallback_prompt = f"{context}\n\nUser: {message}\n\nRespond as AmbatuCode AI assistant."
             fallback_resp = await asyncio.to_thread(
                 fallback_model.generate_content, fallback_prompt
             )

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Neuravity-App'
+        'User-Agent': 'AmbatuCode-App'
       },
     });
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Neuravity-App'
+        'User-Agent': 'AmbatuCode-App'
       },
     });
 

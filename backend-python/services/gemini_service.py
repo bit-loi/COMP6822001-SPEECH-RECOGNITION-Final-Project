@@ -414,7 +414,7 @@ Instructions:
 
 User's cognitive needs: {', '.join(user_profile.get('cognitive_needs', []))}
 
-Respond as Neuravity AI assistant.
+Respond as AmbatuCode AI assistant.
 """
         
         response = await asyncio.to_thread(

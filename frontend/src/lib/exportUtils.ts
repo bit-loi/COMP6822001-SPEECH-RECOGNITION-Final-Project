@@ -1,5 +1,5 @@
 /**
- * Neuravity Export Utilities
+ * AmbatuCode Export Utilities
  * - exportChatHistory: Chat session → Markdown file (for therapists, notes, Obsidian)
  * - exportProjectZip: All editor files → ZIP download
  */
@@ -31,11 +31,11 @@ function messagesToMarkdown(messages: Message[]): string {
   });
 
   const lines: string[] = [
-    `# Neuravity AI — Sesi Coding`,
+    `# AmbatuCode AI — Sesi Coding`,
     ``,
     `> **Tanggal:** ${sessionDate}  `,
     `> **Jumlah pesan:** ${messages.length}  `,
-    `> **Dibuat oleh:** Neuravity — Neurodivergent-Friendly Code Editor`,
+    `> **Dibuat oleh:** AmbatuCode — Neurodivergent-Friendly Code Editor`,
     ``,
     `---`,
     ``,
@@ -48,7 +48,7 @@ function messagesToMarkdown(messages: Message[]): string {
       lines.push(msg.content);
       lines.push(``);
     } else {
-      lines.push(`### Neuravity AI — ${formatTimestamp(msg.timestamp)}`);
+      lines.push(`### AmbatuCode AI — ${formatTimestamp(msg.timestamp)}`);
       lines.push(``);
       // Wrap code blocks if detected
       lines.push(msg.content);
@@ -58,7 +58,7 @@ function messagesToMarkdown(messages: Message[]): string {
     lines.push(``);
   }
 
-  lines.push(`*Catatan: Dokumen ini digenerate otomatis dari sesi coding di Neuravity.*`);
+  lines.push(`*Catatan: Dokumen ini digenerate otomatis dari sesi coding di AmbatuCode.*`);
   return lines.join('\n');
 }
 
@@ -74,7 +74,7 @@ export function exportChatHistory(messages: Message[]): void {
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const filename = `neuravity-sesi-${dateStr}.md`;
+  const filename = `ambatucode-sesi-${dateStr}.md`;
 
   const a = document.createElement('a');
   a.href = url;
@@ -125,7 +125,7 @@ export async function exportProjectZip(fileTree: FileNode[], projectName?: strin
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const name = projectName ?? 'neuravity-project';
+  const name = projectName ?? 'ambatucode-project';
   const filename = `${name}-${dateStr}.zip`;
 
   const a = document.createElement('a');

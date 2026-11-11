@@ -1,5 +1,5 @@
 /**
- * Zustand Store for Neuravity
+ * Zustand Store for AmbatuCode
  * Manages global application state
  */
 
@@ -193,7 +193,7 @@ export const useAppStore = create<AppState>()(
         })),
     }),
     {
-      name: "neuravity-storage",
+      name: "ambatucode-storage",
       partialize: (state) => ({
         editorConfig: state.editorConfig,
         sensorySettings: state.sensorySettings,

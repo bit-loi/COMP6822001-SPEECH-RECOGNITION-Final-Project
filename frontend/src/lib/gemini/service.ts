@@ -16,7 +16,7 @@ import {
 import { RateLimiter, retryWithBackoff, withGracefulDegradation } from './utils';
 
 /**
- * Neuravity Gemini Service
+ * AmbatuCode Gemini Service
  * 
  * A robust service for AI-powered emotional analysis and adaptive learning
  * designed specifically for neurodivergent developers.

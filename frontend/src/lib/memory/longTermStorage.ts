@@ -1,7 +1,7 @@
 import { compress, decompress } from 'lz-string';
 import { LongTermMemory, ProjectStructure, CommonPattern, EmotionalPattern, CodingStyle } from './types';
 
-const STORAGE_KEY = 'neuravity-longterm-memory';
+const STORAGE_KEY = 'ambatucode-longterm-memory';
 const VERSION = '1.0.0';
 
 /**

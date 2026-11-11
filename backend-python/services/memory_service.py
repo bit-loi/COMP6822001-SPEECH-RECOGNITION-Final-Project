@@ -140,7 +140,7 @@ class MemoryService:
             print(f"[MemoryService] Profile load skipped (non-fatal): {e}")
         
         # 4. Combine context
-        full_context = f"""You are Neuravity AI, a helpful coding assistant designed for neurodivergent developers.
+        full_context = f"""You are AmbatuCode AI, a helpful coding assistant designed for neurodivergent developers.
 You help with coding questions, code generation, debugging, and explanations.
 Respond in the same language as the user (Indonesian or English).
 

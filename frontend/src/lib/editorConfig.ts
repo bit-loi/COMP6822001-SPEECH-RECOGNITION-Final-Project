@@ -159,7 +159,7 @@ export const SUPPORTED_LANGUAGES = [
   { value: "markdown", label: "Markdown" },
 ] as const;
 
-export const STORAGE_KEY = "neuravity-editor-settings";
+export const STORAGE_KEY = "ambatucode-editor-settings";
 
 export function saveSettings(settings: NeurodivergentEditorSettings): void {
   if (typeof window !== "undefined") {

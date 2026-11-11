@@ -1,4 +1,4 @@
-# Neuravity Gemini Service
+# AmbatuCode Gemini Service
 
 A robust, production-ready AI service for emotional analysis and adaptive learning, specifically designed for neurodivergent developers.
 
@@ -460,7 +460,7 @@ When adding new features:
 
 ## 📝 License
 
-Part of the Neuravity project.
+Part of the AmbatuCode project.
 
 ---
 

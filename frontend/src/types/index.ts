@@ -1,5 +1,5 @@
 /**
- * Core type definitions for Neuravity
+ * Core type definitions for AmbatuCode
  */
 
 // Emotional States

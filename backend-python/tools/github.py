@@ -9,7 +9,7 @@ def get_github_client():
 
 def get_repo_issues(state: str = "open") -> list:
     """
-    Fetch issues from Neuravity GitHub repository.
+    Fetch issues from AmbatuCode GitHub repository.
     
     Args:
         state: The state of the issue, can be 'open', 'closed', or 'all'.

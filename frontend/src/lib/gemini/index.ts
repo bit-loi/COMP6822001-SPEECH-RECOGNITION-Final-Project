@@ -1,5 +1,5 @@
 /**
- * Neuravity Gemini Service
+ * AmbatuCode Gemini Service
  * 
  * AI-powered emotional analysis and adaptive learning for neurodivergent developers
  */

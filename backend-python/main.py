@@ -9,7 +9,7 @@ from routers import voice, agent, projects, github_router
 from dependencies.auth import verify_user
 from fastapi import Depends
 app = FastAPI(
-    title="Neuravity API",
+    title="AmbatuCode API",
     description="Voice-to-code and AI Agent with memory for neurodivergent developers",
     version="2.0.0"
 )
@@ -32,7 +32,7 @@ app.include_router(github_router.router)
 @app.get("/")
 async def root():
     return {
-        "message": "Neuravity API",
+        "message": "AmbatuCode API",
         "features": ["voice-to-code", "ai-agent-with-memory"],
         "gemini_model": "gemini-2.0-flash-exp"
     }

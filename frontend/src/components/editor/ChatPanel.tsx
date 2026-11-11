@@ -350,7 +350,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="p-4 bg-purple-100 dark:bg-purple-900/20 rounded-full mb-4">
-              <img src="/logo.png" alt="Neuravity" className="w-8 h-8" />
+              <img src="/logo.png" alt="AmbatuCode" className="w-8 h-8" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               How can I help you today?
@@ -384,7 +384,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                       ? 'text-purple-100' 
                       : 'text-gray-600 dark:text-gray-400'
                   )}>
-                    {message.role === 'user' ? 'You' : 'Neuravity AI'}
+                    {message.role === 'user' ? 'You' : 'AmbatuCode AI'}
                   </span>
                   <span 
                     className={cn(
@@ -437,7 +437,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             </div>
             <div className="relative group max-w-[85%] bg-white dark:bg-[#252526] border border-gray-100 dark:border-[#333333] shadow-sm rounded-2xl rounded-tl-sm px-5 py-3.5">
               <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">Neuravity AI</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">AmbatuCode AI</span>
                 <span className="text-gray-400 dark:text-gray-500 text-xs mt-0.5 font-medium tracking-wide">{t("chat.agent_thinking")}</span>
               </div>
               <div className="mt-3 flex gap-1 items-center h-4">
@@ -477,7 +477,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 
                 <Brain className="h-4 w-4 animate-pulse text-purple-500 dark:text-purple-400" />
                 <span className="relative drop-shadow-sm">
-                  {t("chat.ai_analyzing") || "Neuravity AI is thinking..."}
+                  {t("chat.ai_analyzing") || "AmbatuCode AI is thinking..."}
                 </span>
                 
                 {/* Micro-dots */}

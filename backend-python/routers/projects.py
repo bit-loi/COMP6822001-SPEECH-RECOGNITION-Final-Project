@@ -22,7 +22,7 @@ async def list_user_projects(user = Depends(verify_user)):
         "data": [
             {
                 "id": "proj_1", 
-                "name": "Neuravity",
+                "name": "AmbatuCode",
                 "framework": "Next.js",
                 "role": "Owner",
                 "last_active": "2026-03-02"

@@ -40,7 +40,7 @@ export const configureMonacoEditor = (monaco: any) => {
   }
 
   // Configure editor options for better error display
-  monaco.editor.defineTheme('neuravity-dark', {
+  monaco.editor.defineTheme('ambatucode-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
@@ -62,7 +62,7 @@ export const configureMonacoEditor = (monaco: any) => {
     },
   });
 
-  monaco.editor.defineTheme('neuravity-light', {
+  monaco.editor.defineTheme('ambatucode-light', {
     base: 'vs',
     inherit: true,
     rules: [

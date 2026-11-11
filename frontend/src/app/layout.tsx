@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Neuravity - Neurodivergent-Friendly Code Editor",
+  title: "AmbatuCode - Neurodivergent-Friendly Code Editor",
   description:
     "An adaptive code editor designed for neurodivergent developers with AI-powered features, emotional state detection, and wellbeing monitoring.",
   keywords: [
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "AI",
     "developer tools",
   ],
-  authors: [{ name: "Neuravity Team" }],
+  authors: [{ name: "AmbatuCode Team" }],
   icons: {
     icon: [
       { url: '/logo.png?v=1', type: 'image/png' },
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     apple: '/logo.png?v=1',
   },
   openGraph: {
-    title: "Neuravity - Neurodivergent-Friendly Code Editor",
+    title: "AmbatuCode - Neurodivergent-Friendly Code Editor",
     description:
       "An adaptive code editor designed for neurodivergent developers",
     type: "website",

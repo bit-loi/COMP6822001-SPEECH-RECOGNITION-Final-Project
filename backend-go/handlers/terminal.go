@@ -10,9 +10,10 @@ import (
 	"github.com/gofiber/websocket/v2"
 )
 
-const (
-	HostWorkDir = "D:\\Documents\\Code\\Hackathon\\Neuravity"
-)
+// HostWorkDir is the directory the local terminal starts in. It is read from
+// the AMBATUCODE_WORKDIR environment variable; when that is unset (or the
+// directory does not exist) the process working directory is used instead.
+var HostWorkDir = os.Getenv("AMBATUCODE_WORKDIR")
 
 func TerminalSocket(c *websocket.Conn) {
 	defer c.Close()
@@ -23,7 +24,9 @@ func TerminalSocket(c *websocket.Conn) {
 
 	// Track current working directory
 	currentDir := HostWorkDir
-	if _, err := os.Stat(currentDir); os.IsNotExist(err) {
+	if currentDir == "" {
+		currentDir, _ = os.Getwd()
+	} else if _, err := os.Stat(currentDir); os.IsNotExist(err) {
 		currentDir, _ = os.Getwd()
 	}
 
@@ -54,7 +57,7 @@ func TerminalSocket(c *websocket.Conn) {
 		// Handle CD command specially
 		if strings.HasPrefix(command, "cd ") {
 			targetDir := strings.TrimSpace(command[3:])
-			
+
 			// Resolve path logic
 			newDir := targetDir
 			if !filepath.IsAbs(targetDir) {
@@ -68,7 +71,7 @@ func TerminalSocket(c *websocket.Conn) {
 			} else {
 				c.WriteMessage(websocket.TextMessage, []byte("\x1b[1;31mcd: no such file or directory: "+targetDir+"\x1b[0m\r\n"))
 			}
-			
+
 			sendPrompt()
 			continue
 		}
@@ -76,7 +79,7 @@ func TerminalSocket(c *websocket.Conn) {
 		// Execute local command
 		cmd := exec.Command("cmd", "/C", command)
 		cmd.Dir = currentDir
-		
+
 		// Capture output
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout
@@ -95,7 +98,7 @@ func TerminalSocket(c *websocket.Conn) {
 			errRaw := stderr.String()
 			errRaw = strings.ReplaceAll(errRaw, "\r\n", "\n")
 			errRaw = strings.ReplaceAll(errRaw, "\n", "\r\n")
-			c.WriteMessage(websocket.TextMessage, []byte("\x1b[1;31m" + errRaw + "\x1b[0m"))
+			c.WriteMessage(websocket.TextMessage, []byte("\x1b[1;31m"+errRaw+"\x1b[0m"))
 		}
 
 		sendPrompt()

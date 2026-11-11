@@ -1,4 +1,4 @@
-# Neuravity 🧠🚀
+# AmbatuCode 🧠🚀
 
 **A neurodivergent-friendly AI-powered code editor web application.** Designed from the ground up to reduce barriers for developers with ADHD, Autism, Dyslexia, and other neurodivergent conditions by blending deep AI automation with high sensory customizability.
 
@@ -11,14 +11,14 @@ Traditional code editors create barriers for neurodivergent developers:
 - **Autism**: Sensory overload, need for predictability, struggling with ambiguous unstructured error messages.
 - **Dyslexia**: Reading dense code, syntax confusion, overwhelming file layouts.
 
-Neuravity solves this with **Voice-to-Code Automation**, **Cognitive Needs Customization**, and a **Proactive AI Agent** that handles the boring, overwhelming stuff for you.
+AmbatuCode solves this with **Voice-to-Code Automation**, **Cognitive Needs Customization**, and a **Proactive AI Agent** that handles the boring, overwhelming stuff for you.
 
 ---
 
 ## 🌟 Key Features
 
 ### 1. 🤖 True AI Automation Agent (New!)
-Unlike typical chat bots, the Neuravity AI acts directly on your workspace. Tell it what you want, and it will:
+Unlike typical chat bots, the AmbatuCode AI acts directly on your workspace. Tell it what you want, and it will:
 - **`create_file` & `delete_file`**: Auto-create or remove files in your project.
 - **`create_folder` & `delete_folder`**: Instantly generate or remove directories.
 - **`insert_code`**: Append code directly to your active text editor.
@@ -74,7 +74,7 @@ One-click settings tailored for specific needs:
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd Neuravity
+   cd AmbatuCode
    ```
 
 2. **Frontend Setup**
@@ -117,4 +117,4 @@ If you are a neurodivergent coder and find something overwhelming, **open an iss
 MIT License.
 
 ---
-_Neuravity — Code the way your brain works best._
+_AmbatuCode — Code the way your brain works best._
