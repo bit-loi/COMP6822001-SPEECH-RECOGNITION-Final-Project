@@ -153,3 +153,50 @@ The pins in `requirements.txt` do not match what is installed in the local venv
 (e.g. `fastapi==0.104.1` vs 0.128.0 installed, `pydantic==2.5.0` vs 2.12.5,
 `google-generativeai==0.3.2` vs 0.8.6). I did not check whether the file resolves
 with a fresh `pip install -r`.
+
+## Phase 4: command mapper
+
+Files: `backend-python/services/command_mapper.py`,
+`backend-python/services/command_map.json`, `backend-python/tests/test_command_mapper.py`.
+
+`command_map.json` is the **single source of truth** for the keyword -> action
+table. The Go pipeline (Phase 6) loads the same file, so the two implementations
+cannot drift apart. It covers all 37 classes exactly once: 25 commands + 12
+no-action words (`bed bird cat dog happy house marvin sheila tree wow unknown silence`).
+
+| Spoken | Action | Params |
+| --- | --- | --- |
+| go / stop | `execute_active_file` / `stop_execution` | |
+| on / off | `toggle_focus_mode` | `direction: enter` / `exit` |
+| up / down | `scroll` | `direction: up` / `down` |
+| left / right | `switch_tab` | `direction: left` / `right` |
+| yes / no | `confirm` / `cancel` | |
+| forward / backward | `redo` / `undo` | |
+| learn / visual / follow | `toggle_task_chunking` / `toggle_theme` / `toggle_chat_panel` | |
+| zero ... nine | `select_tab_0` ... `select_tab_9` | |
+
+Decision order: `no_action` word -> `no_action_word`; label not in the map ->
+`unknown_label`; `confidence < threshold` -> `below_threshold`; else `mapped`.
+Each result carries a `reason` so the UI can say *why* nothing happened.
+
+### Assumptions
+- **The threshold is inclusive**: `confidence == 0.75` fires; `0.7499999` does not.
+- **Threshold precedence:** constructor argument, then
+  `AMBATUCODE_CONFIDENCE_THRESHOLD`, then `confidence_threshold` in the JSON, then
+  0.75. A malformed or out-of-range env value raises instead of being ignored.
+  `AMBATUCODE_COMMAND_MAP` can point at a different map file.
+- **Label matching is exact and case-sensitive.** `"GO"` is an `unknown_label`, which
+  surfaces a misbehaving classifier instead of hiding it.
+- **`select_tab_N` keeps the spoken digit in the action name** (as specified). How the
+  frontend interprets N is decided in Phase 7: 1-9 select the 1st-9th open tab and
+  0 selects the 10th, matching the usual Alt+1..9 / Alt+0 tab shortcuts.
+- Unspecified details that I chose: `reason` values, the `params` shape, and
+  `version` / `description` fields in the JSON (both ignored by loaders).
+
+### Tests (107)
+Every mapping (25 commands, 12 no-action words x 3 confidences), the exact
+37-class set, threshold boundaries (0.75 inclusive, 0.7499999, 0.0, 1.0),
+constructor / env / JSON threshold precedence, bad thresholds, exact-match
+labels, `map_output`, defensive copies, serialised shape, and malformed-map
+validation. The expectations are written out independently of the JSON; changing
+`backward` to `redo` in the JSON makes two tests fail (checked, then restored).
