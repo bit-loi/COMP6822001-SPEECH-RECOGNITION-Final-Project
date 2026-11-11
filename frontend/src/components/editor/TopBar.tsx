@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, X, Play, FileCode, FileText, Settings, Image, BrainCircuit, MessageSquare, ChevronRight, Settings2 } from 'lucide-react';
+import { Menu, X, Play, FileCode, FileText, Settings, Image } from 'lucide-react';
 import { AutoSaveIndicator } from '@/components/memory';
 import { ModeToggle } from '@/components/mode-toggle';
 import { FileNode, findNodeContent } from '@/types/editor';
@@ -14,14 +14,7 @@ interface TopBarProps {
   setCurrentFilePath: (path: string) => void;
   setCode: (code: string) => void;
   handleCloseFile: (path: string, e: React.MouseEvent) => void;
-  isResizingChat: boolean;
-  setIsResizingChat: (isResizing: boolean) => void;
   onRun: () => void;
-  focusMode: boolean;
-  setFocusMode: (v: boolean) => void;
-  chatCollapsed: boolean;
-  setChatCollapsed: (v: boolean) => void;
-  onOpenCustomizations: () => void;
   uiLanguage: string;
 }
 
@@ -106,14 +99,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   setCurrentFilePath,
   setCode,
   handleCloseFile,
-  isResizingChat,
-  setIsResizingChat,
   onRun,
-  focusMode,
-  setFocusMode,
-  chatCollapsed,
-  setChatCollapsed,
-  onOpenCustomizations,
   uiLanguage,
 }) => {
   const t = (key: string) => getTranslation(key, uiLanguage as Language);
@@ -166,49 +152,6 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       <div className="flex items-center space-x-2 px-3 flex-shrink-0">
-         {/* Chat collapse toggle */}
-         {!focusMode && (
-           <button
-             onClick={() => setChatCollapsed(!chatCollapsed)}
-             className={`p-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
-               chatCollapsed
-                 ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
-                 : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-             }`}
-             title={chatCollapsed ? 'Show AI Chat (Alt+C)' : 'Hide AI Chat (Alt+C)'}
-           >
-             <MessageSquare className="w-3.5 h-3.5" />
-             {chatCollapsed && <ChevronRight className="w-3 h-3" />}
-           </button>
-         )}
-
-         {/* Focus mode toggle */}
-         <button
-           onClick={() => setFocusMode(!focusMode)}
-           className={`p-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
-             focusMode
-               ? 'bg-purple-600 text-white shadow-inner shadow-purple-800'
-               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-           }`}
-           title={focusMode ? 'Exit Focus Mode (F11)' : 'Focus Mode — Hide all panels (F11)'}
-         >
-           <BrainCircuit className="w-3.5 h-3.5" />
-           {focusMode && <span className="text-[11px] font-semibold tracking-wide">FOCUS</span>}
-         </button>
-
-         <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
-
-         {/* Customizations Settings */}
-         <button
-           onClick={onOpenCustomizations}
-           className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-           title="Customizations & Settings"
-         >
-           <Settings2 className="w-3.5 h-3.5" />
-         </button>
-
-         <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
-
          <button
            onClick={onRun}
            className="flex items-center space-x-1.5 px-4 py-1.5 bg-purple-600 hover:bg-purple-500 dark:bg-purple-700 dark:hover:bg-purple-600 rounded-full text-xs text-white font-medium transition-colors shadow-sm"

@@ -1,40 +1,26 @@
 'use client';
 
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { useAuthStore } from '@/store/auth';
 import { useTheme } from 'next-themes';
-import { useGemini } from '@/hooks/useGemini';
 import { useContextManager } from '@/lib/memory';
 import Editor from '@monaco-editor/react';
-import { Terminal as TerminalIcon, Plus, X, GripVertical, Loader2 } from 'lucide-react';
 import { configureMonacoEditor, getMonacoLanguage } from '@/lib/monacoConfig';
 
-import {
-  FileNode,
-  Message,
-  TerminalTab,
-  GitHubRepo,
-  getLanguageFromFilename,
-  findNodeContent,
-  getProjectContext
-} from '@/types/editor';
+import { FileNode, TerminalTab } from '@/types/editor';
 import { getTranslation, type Language } from '@/lib/translations';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sidebar } from '@/components/editor/Sidebar';
 import { TopBar } from '@/components/editor/TopBar';
-import { ChatPanel } from '@/components/editor/ChatPanel';
+import { VoicePanel, type VoiceAction } from '@/components/editor/VoicePanel';
 import { TerminalPanel } from '@/components/editor/TerminalPanel';
-import { CustomizationsPanel } from '@/components/editor/EditorSettings';
 import { writeToTerminal } from '@/components/Terminal';
 import { executeCode } from '@/services/compiler';
-import { loadSettings, getMonacoOptions, defaultAccessibilitySettings, type AccessibilityEditorSettings } from '@/lib/editorConfig';
+import { getMonacoOptions, defaultAccessibilitySettings } from '@/lib/editorConfig';
 import { useToast } from '@/hooks/use-toast';
 
 export default function EditorPage() {
-  const { user, isAuthenticated, signInWithGitHub, signOut, initialize } = useAuthStore();
   const { resolvedTheme, setTheme } = useTheme();
-  const gemini = useGemini();
   const contextManager = useContextManager();
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
@@ -42,80 +28,23 @@ export default function EditorPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
-  
-  const [editorSettings, setEditorSettings] = useState<AccessibilityEditorSettings>(() => {
-    if (typeof window !== 'undefined') return loadSettings();
-    return { focusMode: false, pomodoroEnabled: false, pomodoroWorkDuration: 25, pomodoroBreakDuration: 5, showTaskChunking: true, showTimeEstimates: true, reducedVisualNoise: false, disablePopups: false, colorScheme: 'default', minimalistUI: false, useDyslexicFont: false, increasedLetterSpacing: false, customLineHeight: 1.6, enhancedSyntaxColors: false, fontSize: 14, theme: 'dark', uiLanguage: 'en' };
-  });
+
+  const editorSettings = defaultAccessibilitySettings;
 
   const [code, setCode] = useState(`// ${getTranslation('sidebar.no_files', editorSettings.uiLanguage as Language)}!
 // ${getTranslation('sidebar.no_files_desc', editorSettings.uiLanguage as Language)}.`);
 
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('ambatucode_chat_history');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
-          }
-        } catch (e) {
-          console.error('Failed to parse chat history', e);
-        }
-      }
-    }
-    return [
-      {
-        id: '1',
-        role: 'assistant',
-        content: getTranslation('chat.welcome', editorSettings.uiLanguage as Language),
-        timestamp: new Date(),
-      }
-    ];
-  });
-
-  // Persist messages to sessionStorage
-  useEffect(() => {
-    if (mounted) {
-      sessionStorage.setItem('ambatucode_chat_history', JSON.stringify(messages));
-    }
-  }, [messages, mounted]);
-
-  const [inputValue, setInputValue] = useState('');
-  const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set()); // Fixed state declaration
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [currentFilePath, setCurrentFilePath] = useState('');
   const [showTerminal, setShowTerminal] = useState(true);
   const [terminalHeight, setTerminalHeight] = useState(250);
-  const [chatWidth, setChatWidth] = useState(384);
   const [isResizingTerminal, setIsResizingTerminal] = useState(false);
-  const [isResizingChat, setIsResizingChat] = useState(false);
   const [terminals, setTerminals] = useState<TerminalTab[]>([
     { id: '1', name: 'bash' }
   ]);
   const [activeTerminal, setActiveTerminal] = useState('1');
   const [isEditorReady, setIsEditorReady] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
-  const [chatCollapsed, setChatCollapsed] = useState(false);
-  const [showCustomizations, setShowCustomizations] = useState(false);
-
-  // Update localized strings when language changes
-  useEffect(() => {
-    if (mounted) {
-      if (messages.length === 1 && messages[0].id === '1') {
-        setMessages([{
-          ...messages[0],
-          content: getTranslation('chat.welcome', editorSettings.uiLanguage as Language)
-        }]);
-      }
-      if (code.startsWith('// ')) {
-        setCode(`// ${getTranslation('sidebar.no_files', editorSettings.uiLanguage as Language)}!
-// ${getTranslation('sidebar.no_files_desc', editorSettings.uiLanguage as Language)}.`);
-      }
-    }
-  }, [editorSettings.uiLanguage, mounted]);
 
   // Modal states
   const [showFileModal, setShowFileModal] = useState(false);
@@ -129,13 +58,6 @@ export default function EditorPage() {
 
   // File tabs state
   const [openFiles, setOpenFiles] = useState<string[]>([]);
-
-  // GitHub import states
-  const [showGitHubModal, setShowGitHubModal] = useState(false);
-  const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([]);
-  const [loadingRepos, setLoadingRepos] = useState(false);
-  const [importingRepo, setImportingRepo] = useState(false);
-  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
 
   // OPTIMIZED: Use a Map (HashMap) for O(1) access, and sync it with a tree for display
   const [fileMap, setFileMap] = useState<Record<string, FileNode>>({});
@@ -194,34 +116,14 @@ export default function EditorPage() {
   // File upload refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<any>(null);
 
   useEffect(() => {
-    initialize();
     contextManager.startSession();
 
     return () => {
       contextManager.endSession();
     };
-  }, [initialize]);
-
-  // Keyboard shortcuts for accessibility
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // F11: Toggle Focus Mode
-      if (e.key === 'F11') {
-        e.preventDefault();
-        setFocusMode(prev => !prev);
-      }
-      // Alt+C: Toggle Chat Panel
-      if (e.altKey && e.key === 'c') {
-        e.preventDefault();
-        setChatCollapsed(prev => !prev);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -229,10 +131,6 @@ export default function EditorPage() {
       contextManager.setCurrentFile(currentFilePath, code, 'rust');
     }
   }, [currentFilePath, code]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   // Terminal resize
   useEffect(() => {
@@ -265,30 +163,6 @@ export default function EditorPage() {
     };
   }, [isResizingTerminal]);
 
-  // Chat resize
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isResizingChat) {
-        const newWidth = window.innerWidth - e.clientX;
-        setChatWidth(Math.max(300, Math.min(window.innerWidth - 320, newWidth)));
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizingChat(false);
-    };
-
-    if (isResizingChat) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isResizingChat]);
-
   const handleEditorWillMount = (monaco: any) => {
     configureMonacoEditor(monaco);
   };
@@ -308,306 +182,6 @@ export default function EditorPage() {
         content: newCode,
       });
     });
-  };
-
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isSending) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: inputValue,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-    setIsSending(true);
-
-    try {
-      const getSessionToken = () => {
-        const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
-        const accessToken = params.get('access_token');
-        if (accessToken) return accessToken;
-
-        const authDataStr = localStorage.getItem('supabase-auth-token');
-        if (authDataStr) {
-           try {
-              const authData = JSON.parse(authDataStr);
-              if (authData?.currentSession?.access_token) {
-                 return authData.currentSession.access_token;
-              }
-           } catch(e) {}
-        }
-        return '';
-      }
-      
-      const token = getSessionToken();
-
-      const response = await fetch('http://127.0.0.1:8000/api/agent/chat', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          user_id: user?.id || 'demo_user',
-          session_id: 'default_session',
-          message: userMessage.content,
-          editor_context: {
-            filename: currentFilePath || 'unknown_file',
-            file_language: currentFilePath ? getMonacoLanguage(currentFilePath) : 'javascript',
-            cursor_line: 1,
-            cursor_column: 1,
-            selected_text: null,
-            surrounding_code: code
-          },
-          ui_language: editorSettings.uiLanguage
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response from AI Agent');
-      }
-
-      const data = await response.json();
-
-      // ── Execute AI Actions ─────────────────────────────────────────────────
-      if (data.actions && data.actions.length > 0) {
-        for (const action of data.actions) {
-          switch (action.type) {
-            case 'create_file': {
-              const newNode: FileNode = {
-                name: action.filename.split('/').pop() || action.filename,
-                type: 'file',
-                path: action.filename,
-                content: action.content || '',
-              };
-              setFileMap((prev: Record<string, FileNode>) => ({ ...prev, [newNode.path]: newNode }));
-              setCurrentFilePath(action.filename);
-              setCode(action.content || '');
-              setOpenFiles((prev: string[]) => prev.includes(action.filename) ? prev : [...prev, action.filename]);
-              break;
-            }
-
-            case 'delete_file': {
-              setFileMap((prev: Record<string, FileNode>) => {
-                const next = { ...prev };
-                delete next[action.filename];
-                return next;
-              });
-              setOpenFiles((prev: string[]) => {
-                const newTabs = prev.filter(f => f !== action.filename);
-                if (currentFilePath === action.filename) {
-                  setCurrentFilePath(newTabs.length > 0 ? newTabs[newTabs.length - 1] : '');
-                  if (newTabs.length === 0) setCode('// Select or create a file to start coding');
-                }
-                return newTabs;
-              });
-              break;
-            }
-
-            case 'create_folder': {
-              const newNode: FileNode = {
-                name: action.folder_name.split('/').pop() || action.folder_name,
-                type: 'folder',
-                path: action.folder_name,
-                children: []
-              };
-              setFileMap((prev: Record<string, FileNode>) => ({ ...prev, [newNode.path]: newNode }));
-              break;
-            }
-
-            case 'delete_folder': {
-              setFileMap((prev: Record<string, FileNode>) => {
-                const next = { ...prev };
-                Object.keys(next).forEach(path => {
-                  if (path === action.folder_name || path.startsWith(action.folder_name + '/')) {
-                    delete next[path];
-                  }
-                });
-                return next;
-              });
-              setOpenFiles((prev: string[]) => {
-                const newTabs = prev.filter(f => !f.startsWith(action.folder_name));
-                if (currentFilePath && currentFilePath.startsWith(action.folder_name)) {
-                  setCurrentFilePath(newTabs.length > 0 ? newTabs[newTabs.length - 1] : '');
-                  if (newTabs.length === 0) setCode('// Select or create a file to start coding');
-                }
-                return newTabs;
-              });
-              break;
-            }
-
-            case 'toggle_focus_mode': {
-              const newState = action.state === 'on' ? true : action.state === 'off' ? false : !focusMode;
-              setFocusMode(newState);
-              setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, focusMode: newState }));
-              break;
-            }
-
-            case 'toggle_chat_panel': {
-              if (action.state === 'open') {
-                setChatCollapsed(false);
-              } else if (action.state === 'close') {
-                setChatCollapsed(true);
-              } else {
-                setChatCollapsed((prev: boolean) => !prev);
-              }
-              break;
-            }
-
-            case 'toggle_theme': {
-              if (action.theme === 'light') {
-                setTheme('light');
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, theme: 'light' }));
-              } else if (action.theme === 'dark') {
-                setTheme('dark');
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, theme: 'dark' }));
-              } else {
-                const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
-                setTheme(newTheme);
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, theme: newTheme }));
-              }
-              break;
-            }
-
-            case 'insert_code': {
-              const pos = action.position || 'end';
-              if (editorRef.current) {
-                const model = editorRef.current.getModel();
-                if (model) {
-                  const lastLine = model.getLineCount();
-                  const lastCol = model.getLineMaxColumn(lastLine);
-                  const insertPos = pos === 'beginning'
-                    ? { lineNumber: 1, column: 1 }
-                    : { lineNumber: lastLine, column: lastCol };
-                  editorRef.current.executeEdits('ai-agent', [{
-                    range: { startLineNumber: insertPos.lineNumber, startColumn: insertPos.column, endLineNumber: insertPos.lineNumber, endColumn: insertPos.column },
-                    text: (pos === 'end' ? '\n\n' : '') + action.code,
-                  }]);
-                }
-              } else {
-                setCode((prev: string) => prev + '\n\n' + action.code);
-              }
-              break;
-            }
-
-            case 'update_file': {
-              setCode(action.content || '');
-              if (editorRef.current) {
-                editorRef.current.setValue(action.content || '');
-              }
-              break;
-            }
-
-            case 'run_command': {
-              writeToTerminal(activeTerminal, action.command + '\n');
-              break;
-            }
-
-            case 'search_code': {
-              if (editorRef.current) {
-                editorRef.current.getAction('actions.find')?.run();
-              }
-              break;
-            }
-
-            case 'update_cognitive_settings': {
-              setEditorSettings((prev: AccessibilityEditorSettings) => ({
-                ...prev,
-                useDyslexicFont: action.readability_mode !== undefined ? action.readability_mode : prev.useDyslexicFont,
-                increasedLetterSpacing: action.readability_mode !== undefined ? action.readability_mode : prev.increasedLetterSpacing,
-                showTaskChunking: action.task_chunking !== undefined ? action.task_chunking : prev.showTaskChunking,
-                showTimeEstimates: action.time_estimates !== undefined ? action.time_estimates : prev.showTimeEstimates,
-                reducedVisualNoise: action.reduced_noise !== undefined ? action.reduced_noise : prev.reducedVisualNoise,
-                minimalistUI: action.reduced_noise !== undefined ? action.reduced_noise : prev.minimalistUI,
-              }));
-              break;
-            }
-
-            case 'set_ui_language': {
-              if (action.language) {
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, uiLanguage: action.language }));
-              }
-              break;
-            }
-
-            case 'control_pomodoro': {
-              if (action.state === 'start') {
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroEnabled: true }));
-              } else if (action.state === 'stop') {
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroEnabled: false }));
-              }
-              if (action.work_minutes) {
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroWorkDuration: action.work_minutes }));
-              }
-              if (action.break_minutes) {
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroBreakDuration: action.break_minutes }));
-              }
-              break;
-            }
-
-            case 'execute_active_file': {
-              if (currentFilePath) {
-                const ext = currentFilePath.split('.').pop()?.toLowerCase();
-                let runCmd = '';
-                if (ext === 'py') runCmd = `python ${currentFilePath}`;
-                else if (ext === 'js') runCmd = `node ${currentFilePath}`;
-                else if (ext === 'go') runCmd = `go run ${currentFilePath}`;
-                else if (ext === 'rs') runCmd = `cargo run`;
-                
-                if (runCmd) {
-                  writeToTerminal(activeTerminal, runCmd + '\n');
-                }
-              }
-              break;
-            }
-
-            case 'set_font_size': {
-              if (action.size) {
-                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, fontSize: action.size }));
-              }
-              break;
-            }
-
-            case 'reset_settings': {
-              setEditorSettings(defaultAccessibilitySettings);
-              setFocusMode(false);
-              setTheme('dark');
-              break;
-            }
-          }
-        }
-      }
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.message,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev: Message[]) => [...prev, aiMessage]);
-    } catch (error) {
-      console.error('Error:', error);
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'I am sorry, but I am currently unable to answer your request. You may need to log in to properly access this feature.',
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const clearChat = () => {
-    setMessages([]);
   };
 
   const toggleFolder = (folderPath: string) => {
@@ -822,132 +396,6 @@ export default function EditorPage() {
     }
   };
 
-  // Fetch GitHub repositories
-  const fetchGitHubRepos = async () => {
-    setLoadingRepos(true);
-    try {
-      const response = await fetch(`/api/github?token=${user?.githubToken || ''}`);
-      const repos = await response.json();
-      setGithubRepos(repos);
-    } catch (error) {
-      console.error('Failed to fetch repos:', error);
-    } finally {
-      setLoadingRepos(false);
-    }
-  };
-
-  // Import repository from GitHub
-  const importGitHubRepo = async (repo: GitHubRepo) => {
-    setImportingRepo(true);
-    setSelectedRepo(repo);
-
-    try {
-      // Fetch root contents
-      const response = await fetch('/api/github', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token: user?.githubToken || '',
-          owner: repo.owner.login,
-          repo: repo.name,
-          path: '',
-        }),
-      });
-
-      const contents = await response.json();
-      
-      if (!Array.isArray(contents)) {
-          throw new Error(contents.error || 'Invalid repository data');
-      }
-
-      // Recursively fetch folder contents
-      const fetchFolderContents = async (items: any[]): Promise<FileNode[]> => {
-        if (!Array.isArray(items)) return [];
-        const nodes: FileNode[] = [];
-
-        for (const item of items) {
-          if (item.type === 'file') {
-            nodes.push(item);
-          } else if (item.type === 'folder') {
-            try {
-              // Fetch subfolder contents
-              const subResponse = await fetch('/api/github', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  token: user?.githubToken || '',
-                  owner: repo.owner.login,
-                  repo: repo.name,
-                  path: item.path,
-                }),
-              });
-
-              if (!subResponse.ok) {
-                 console.warn(`Failed to fetch subfolder: ${item.path}`);
-                 nodes.push(item); // Add as empty folder if fetch fails
-                 continue;
-              }
-
-              const subContents = await subResponse.json();
-              const children = await fetchFolderContents(subContents);
-
-              nodes.push({
-                ...item,
-                children,
-              });
-            } catch (e) {
-               console.error(`Error in recursive fetch for ${item.path}:`, e);
-               nodes.push(item);
-            }
-          }
-        }
-
-        return nodes;
-      };
-
-      const repoTree = await fetchFolderContents(contents);
-
-      // Create root folder for the repo
-      const repoNodes: Record<string, FileNode> = {};
-      const traverseNodes = (nodes: FileNode[], parentPath: string = '') => {
-        nodes.forEach(node => {
-          const fullPath = parentPath ? `${parentPath}/${node.name}` : node.name;
-          repoNodes[fullPath] = { ...node, path: fullPath };
-          if (node.children) traverseNodes(node.children, fullPath);
-        });
-      };
-
-      const repoRoot: FileNode = {
-        name: repo.name,
-        type: 'folder',
-        path: repo.name,
-        children: repoTree
-      };
-      
-      repoNodes[repo.name] = repoRoot;
-      traverseNodes(repoTree, repo.name);
-
-      setFileMap((prev: Record<string, FileNode>) => ({ ...prev, ...repoNodes }));
-      setExpandedFolders((prev: Set<string>) => new Set([...prev, repo.name]));
-      setShowGitHubModal(false);
-      
-      toast({
-        title: "Success",
-        description: `Imported ${repo.name} successfully!`,
-      });
-    } catch (error: any) {
-      console.error('Failed to import repo:', error);
-      toast({
-        title: "Import Failed",
-        description: error.message || "Something went wrong while importing the repository. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setImportingRepo(false);
-      setSelectedRepo(null);
-    }
-  };
-
   const handleMoveItem = (sourcePath: string, targetFolderPath: string) => {
     setFileMap((prev: Record<string, FileNode>) => {
       const next = { ...prev };
@@ -1065,56 +513,79 @@ export default function EditorPage() {
     }
   };
 
-  const handleNewChat = () => {
-    setMessages([{
-      id: '1',
-      role: 'assistant',
-      content: getTranslation('chat.welcome', editorSettings.uiLanguage as Language),
-      timestamp: new Date(),
-    }]);
-  };
+  const handleVoiceAction = (action: VoiceAction | null) => {
+    if (!action) return;
 
-  const handleShowHistory = () => {
-    toast({
-      title: "Work in Progress",
-      description: getTranslation('chat.history_wip', editorSettings.uiLanguage as Language),
-    });
+    const tabMatch = /^select_tab_(\d)$/.exec(action.action);
+    if (tabMatch && openFiles.length > 0) {
+      const path = openFiles[Number(tabMatch[1])];
+      if (path) {
+        setCurrentFilePath(path);
+        setCode(fileMap[path]?.content ?? '');
+      }
+      return;
+    }
+
+    switch (action.action) {
+      case 'execute_active_file':
+        void handleRun();
+        break;
+      case 'stop_execution':
+        writeToTerminal(activeTerminal, '^C\r\n');
+        break;
+      case 'scroll': {
+        if (!editorRef.current) break;
+        const direction = action.params?.direction;
+        const currentScroll = editorRef.current.getScrollTop() as number;
+        editorRef.current.setScrollPosition({
+          scrollTop: Math.max(0, currentScroll + (direction === 'up' ? -240 : 240)),
+        });
+        break;
+      }
+      case 'switch_tab': {
+        if (openFiles.length === 0) break;
+        const currentIndex = Math.max(0, openFiles.indexOf(currentFilePath));
+        const step = action.params?.direction === 'left' ? -1 : 1;
+        const path = openFiles[(currentIndex + step + openFiles.length) % openFiles.length];
+        setCurrentFilePath(path);
+        setCode(fileMap[path]?.content ?? '');
+        break;
+      }
+      case 'undo':
+      case 'redo':
+        editorRef.current?.trigger('keyboard', action.action);
+        break;
+      case 'toggle_theme':
+        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+        break;
+      default:
+        break;
+    }
   };
 
   return (
     <div className="flex h-screen bg-white dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 font-sans overflow-hidden transition-colors">
-      {/* Sidebar Component - hidden in focus mode */}
-      {!focusMode && (
-        <Sidebar
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          fileTree={fileTree}
-          expandedFolders={expandedFolders}
-          toggleFolder={toggleFolder}
-          handleFileClick={handleFileClick}
-          currentFilePath={currentFilePath}
-          onOpenFileModal={openFileModal}
-          onOpenFolderModal={openFolderModal}
-          onDelete={item => {
-            setItemToDelete(item);
-            setShowDeleteModal(true);
-          }}
-          fileInputRef={fileInputRef}
-          folderInputRef={folderInputRef}
-          handleFileUpload={handleFileUpload}
-          handleFolderUpload={handleFolderUpload}
-          onOpenGitHubModal={() => {
-            setShowGitHubModal(true);
-            fetchGitHubRepos();
-          }}
-          isAuthenticated={isAuthenticated}
-          user={user}
-          signInWithGitHub={signInWithGitHub}
-          signOut={signOut}
-          uiLanguage={editorSettings.uiLanguage}
-          onMoveItem={handleMoveItem}
-        />
-      )}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        fileTree={fileTree}
+        expandedFolders={expandedFolders}
+        toggleFolder={toggleFolder}
+        handleFileClick={handleFileClick}
+        currentFilePath={currentFilePath}
+        onOpenFileModal={openFileModal}
+        onOpenFolderModal={openFolderModal}
+        onDelete={item => {
+          setItemToDelete(item);
+          setShowDeleteModal(true);
+        }}
+        fileInputRef={fileInputRef}
+        folderInputRef={folderInputRef}
+        handleFileUpload={handleFileUpload}
+        handleFolderUpload={handleFolderUpload}
+        uiLanguage={editorSettings.uiLanguage}
+        onMoveItem={handleMoveItem}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -1128,21 +599,14 @@ export default function EditorPage() {
            setCurrentFilePath={setCurrentFilePath}
            setCode={setCode}
            handleCloseFile={handleCloseFile}
-           isResizingChat={isResizingChat}
-           setIsResizingChat={setIsResizingChat}
            onRun={handleRun}
-           focusMode={focusMode}
-           setFocusMode={setFocusMode}
-           chatCollapsed={chatCollapsed}
-           setChatCollapsed={setChatCollapsed}
-           onOpenCustomizations={() => setShowCustomizations(true)}
            uiLanguage={editorSettings.uiLanguage}
         />
 
         <div className="flex-1 flex overflow-hidden bg-background transition-colors min-w-0">
           {/* Editor and Terminal Container */}
           <div className="flex-1 flex flex-col min-w-0 min-h-0 editor-container relative bg-background transition-colors">
-            <div className={`flex-1 relative bg-background transition-colors min-h-0 overflow-hidden ${isResizingTerminal || isResizingChat ? 'pointer-events-none' : ''}`}>
+            <div className={`flex-1 relative bg-background transition-colors min-h-0 overflow-hidden ${isResizingTerminal ? 'pointer-events-none' : ''}`}>
               {!isEditorReady && (
                 <div className="absolute inset-0 z-10 p-8 space-y-4 bg-background transition-colors">
                   <Skeleton className="h-4 w-[200px]" />
@@ -1166,7 +630,7 @@ export default function EditorPage() {
                 onMount={handleEditorDidMount}
                 options={{
                   ...getMonacoOptions(editorSettings),
-                  minimap: { enabled: !focusMode && !editorSettings.minimalistUI },
+                  minimap: { enabled: !editorSettings.minimalistUI },
                   renderLineHighlight: 'all',
                   cursorBlinking: 'smooth',
                   cursorSmoothCaretAnimation: 'on',
@@ -1176,52 +640,23 @@ export default function EditorPage() {
               />
             </div>
 
-            {/* Terminal Panel - hidden in focus mode */}
-            {!focusMode && (
-              <TerminalPanel
-                showTerminal={showTerminal}
-                setShowTerminal={setShowTerminal}
-                height={terminalHeight}
-                isResizing={isResizingTerminal}
-                setIsResizing={setIsResizingTerminal}
-                terminals={terminals}
-                activeTerminalId={activeTerminal}
-                setActiveTerminalId={setActiveTerminal}
-                onNewTerminal={addNewTerminal}
-                onCloseTerminal={closeTerminal}
-                onCommand={handleTerminalCommand}
-                uiLanguage={editorSettings.uiLanguage}
-              />
-            )}
+            <TerminalPanel
+              showTerminal={showTerminal}
+              setShowTerminal={setShowTerminal}
+              height={terminalHeight}
+              isResizing={isResizingTerminal}
+              setIsResizing={setIsResizingTerminal}
+              terminals={terminals}
+              activeTerminalId={activeTerminal}
+              setActiveTerminalId={setActiveTerminal}
+              onNewTerminal={addNewTerminal}
+              onCloseTerminal={closeTerminal}
+              onCommand={handleTerminalCommand}
+              uiLanguage={editorSettings.uiLanguage}
+            />
           </div>
 
-          {/* Chat Resize Handle - hidden in focus/collapse mode */}
-          {!focusMode && !chatCollapsed && (
-            <div
-              className={`w-1 cursor-ew-resize flex-shrink-0 transition-colors z-20 hover:bg-purple-500 ${
-                isResizingChat ? 'bg-purple-500' : 'bg-transparent border-l border-gray-200 dark:border-zinc-800'
-              }`}
-              onMouseDown={() => setIsResizingChat(true)}
-            />
-          )}
-
-          {/* Chat Panel - hidden in focus mode, collapsible */}
-          {!focusMode && !chatCollapsed && (
-            <ChatPanel 
-               width={chatWidth}
-               messages={messages}
-               inputValue={inputValue}
-               setInputValue={setInputValue}
-               handleSendMessage={handleSendMessage}
-               isSending={isSending}
-               messagesEndRef={messagesEndRef}
-               isResizing={isResizingChat}
-               setIsResizing={setIsResizingChat}
-               uiLanguage={editorSettings.uiLanguage}
-               onNewChat={handleNewChat}
-               onShowHistory={handleShowHistory}
-            />
-          )}
+          <VoicePanel onAction={handleVoiceAction} />
         </div>
       </div>
 
@@ -1314,59 +749,6 @@ export default function EditorPage() {
         </div>
       )}
 
-      {/* GitHub Import Modal */}
-      {showGitHubModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-lg border border-gray-200 dark:border-gray-800 w-96 max-h-[80vh] flex flex-col shadow-lg">
-            <h3 className="text-lg font-medium mb-4 text-black dark:text-white">Import from GitHub</h3>
-            
-            {loadingRepos ? (
-               <div className="flex items-center justify-center py-8">
-                 <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-               </div>
-            ) : (
-                <div className="flex-1 overflow-y-auto space-y-2">
-                  {Array.isArray(githubRepos) ? (
-                    githubRepos.map(repo => (
-                      <button
-                        key={repo.id}
-                        onClick={() => importGitHubRepo(repo)}
-                        disabled={importingRepo}
-                        className="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded border border-gray-200 dark:border-gray-800 hover:border-purple-500/50 transition-colors"
-                      >
-                        <div className="font-medium text-sm text-black dark:text-white">{repo.full_name}</div>
-                        <div className="text-xs text-gray-500 truncate">{repo.description}</div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-red-500 text-sm">
-                      {(githubRepos as any)?.error || 'Failed to load repositories. Please check your GitHub token.'}
-                    </div>
-                  )}
-                </div>
-            )}
-            
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setShowGitHubModal(false)}
-                className="px-3 py-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 rounded"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Customizations Panel (Side Sheet) */}
-      <CustomizationsPanel
-        open={showCustomizations}
-        onOpenChange={setShowCustomizations}
-        settings={editorSettings}
-        onSettingsChange={(s) => {
-          setEditorSettings(s);
-          if (s.focusMode !== focusMode) setFocusMode(s.focusMode);
-        }}
-      />
     </div>
   );
 }

@@ -5,7 +5,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import voice, agent, projects, github_router
+from routers import voice, agent, projects
 from dependencies.auth import verify_user
 from fastapi import Depends
 app = FastAPI(
@@ -27,7 +27,6 @@ app.add_middleware(
 app.include_router(voice.router, dependencies=[Depends(verify_user)])
 app.include_router(agent.router, dependencies=[Depends(verify_user)])
 app.include_router(projects.router)
-app.include_router(github_router.router)
 
 @app.get("/")
 async def root():

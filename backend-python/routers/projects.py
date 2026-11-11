@@ -13,7 +13,7 @@ async def list_user_projects(user = Depends(verify_user)):
     """
     Mengambil semua project/workspace milik user yang sedang aktif.
     """
-    # Di masa depan, integrasikan query ini ke Supabase / Database SQL
+    # Demo data for this course project; no database is configured.
     user_id = user.id
     
     return {

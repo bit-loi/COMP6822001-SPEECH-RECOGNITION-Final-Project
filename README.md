@@ -1,78 +1,55 @@
 # AmbatuCode
 
-**A voice-controlled AI-powered code editor for developers recovering from hand injuries.** Built so coding does not have to stop while your hands heal: speak what you want, and the editor turns it into file operations, code edits, terminal commands, and commits.
+**A voice-controlled code editor built for the Speech Recognition final project.**
 
-> **Final Project — Speech Recognition.** This repository is the final project for the Speech Recognition course. The speech path is deliberately classical: local MFCC features and a non-deep-learning keyword classifier over Google Speech Commands v2 (35 keywords + `silence` + `unknown`), with no cloud speech APIs.
+Speak short keywords, and the editor turns them into actions: run the active file, stop, scroll, switch tabs, change the theme, undo/redo, or jump to a tab by number.
 
----
-
-## The Problem
-
-A hand injury — RSI, carpal tunnel surgery, a fracture, tendonitis — takes typing and mouse work off the table for weeks or months. Most editors assume both are available, so recovery means losing momentum on projects you care about.
-
-AmbatuCode is built around that constraint:
-- **Typing hurts**: repetitive keystrokes aggravate the injury and slow recovery.
-- **Shortcuts and menus demand the exact motions that hurt**: chords, drags, and precise clicks.
-- **Time away costs context**: after a break you have to rebuild the mental model of the codebase.
-- **Assistive tools are usually separate from the editor**: dictation writes into a box, not into your project.
-
-AmbatuCode closes that gap with on-device voice commands, an AI agent that performs the mechanical work, and comfort settings that reduce the physical effort per action.
+> **Final Project — Speech Recognition.** The speech path is deliberately classical: local MFCC features and a non-deep-learning keyword classifier over Google Speech Commands v2 (35 keywords + `silence` + `unknown`), with no cloud speech APIs.
 
 ---
 
-## Key Features
+## How It Works
 
-### 1. Voice-to-Code Commands
-Control the editor without touching the keyboard.
-- Speech is recognized **locally** by the Go backend (MFCC features plus a lightweight keyword classifier), so short commands like `go`, `stop`, `up`, `down`, `left`, `right`, `yes`, `no`, `undo`, `redo`, and `zero`–`nine` map straight to editor actions.
-- No cloud speech API is used and no audio is stored.
-- The AI layer can also translate a spoken intent ("bikin fungsi hello world", "add a test for this file") into actual cursor and file modifications.
+1. The browser captures microphone audio as 16 kHz mono `pcm_s16le` and streams it to the Go backend over `ws://127.0.0.1:3002/ws/voice`.
+2. The Go backend runs voice activity detection, MFCC feature extraction, a keyword classifier, and the command mapper.
+3. The result comes back as JSON with the recognised label, confidence, top-k candidates, and the mapped editor action.
+4. The frontend applies the action to the editor.
 
-### 2. True AI Automation Agent (New!)
-Unlike typical chat bots, the AmbatuCode AI acts directly on your workspace, so you describe the change instead of performing it:
-- **`create_file` & `delete_file`**: Auto-create or remove files in your project.
-- **`create_folder` & `delete_folder`**: Instantly generate or remove directories.
-- **`insert_code`**: Append code directly to your active text editor.
-- **`update_file`**: Perform full code refactoring on your target.
-- **`run_command`**: Execute bash commands securely in the integrated terminal (e.g., `npm install`).
-- **`git_commit_push`**: Automatically stage changes, generate a conventional commit message, and push to GitHub!
+No audio is stored, and no cloud speech API is used.
 
-### 3. Accessibility & Comfort Panel
-One-click settings that lower the physical effort of each session:
-- **Readability Mode**: Bigger line heights, custom spacing, OpenDyslexic-styled fonts.
-- **Focus Mode**: Instantly hides all distractions (sidebars, terminal, chat) through `F11`.
-- **Comfort Settings**: Disable overly flashy animations, pick comfortable high-contrast themes, and adjust font size without menus.
+### Voice Commands
 
-### 4. Adaptive Memory System
-- **Conversation Memory**: The AI remembers context from previous sessions, so returning after a break does not mean starting over.
-- **User Profile Memory**: The AI learns your working preferences (e.g., "explain step-by-step") and adjusts its language and tone.
-- **Multilingual Native**: Speak/type in English, Indonesian, Spanish, or Japanese, and the AI matches your language.
+| Keyword | Action |
+| --- | --- |
+| `go` | Run the active file |
+| `stop` | Stop the current execution |
+| `up` / `down` | Scroll the editor |
+| `left` / `right` | Switch tabs |
+| `backward` / `forward` | Undo / redo |
+| `visual` | Toggle light/dark theme |
+| `one` … `nine`, `zero` | Select an open tab |
+| `yes` / `no` | Confirm / cancel (UI-dependent) |
 
-### 5. Session Sharing & Exporting
-- Export your coding conversation into a formatted Markdown/PDF transcript.
-- Zip and download your entire project workspace locally.
-- Useful for keeping a recovery log, handing work to a teammate, or sharing progress with an occupational therapist.
+Other Speech Commands v2 words are recognised but intentionally have no action. See `backend-python/services/command_map.json`.
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14 App Router, TypeScript, Tailwind CSS, Monaco Editor, Zustand.
-- **Backend (Python)**: FastAPI, Uvicorn, Python-based Agentic Tool Executors.
-- **Backend (Go)**: Go Fiber (fast socket routing and microservices), on-device voice pipeline (MFCC + keyword classifier) over WebSocket.
-- **AI Core**: Google Gemini 2.5 Flash API (Function Calling & Embedding) for chat and the agent, not for speech recognition.
-- **Database**: PostgreSQL / Supabase.
-- **Integrations**: GitHub OAuth, JSZip.
+- **Frontend**: Next.js App Router, TypeScript, Tailwind CSS, Monaco Editor.
+- **Backend (Go)**: Go Fiber, WebSocket voice streaming, MFCC feature extraction, command mapping.
+- **Backend (Python)**: FastAPI for the editor/compiler and file APIs.
+- **Speech features**: 13 MFCC + delta + delta-delta (39 channels), 25 ms window, 10 ms hop, 16 kHz mono. Parameters live in `backend-go/voice/params.go`.
 
 ---
 
 ## Installation & Setup
 
 ### Prerequisites
+
 - Node.js 20+
 - Python 3.10+
 - Go 1.21+
-- Google Gemini API Key
 
 ### Quick Start
 
@@ -82,44 +59,49 @@ One-click settings that lower the physical effort of each session:
    cd AmbatuCode
    ```
 
-2. **Frontend Setup**
+2. **Frontend**
    ```bash
    cd frontend
    npm install
-   cp .env.example .env.local
-   # Edit .env.local and add NEXT_PUBLIC_GEMINI_API_KEY
    npm run dev
    ```
 
-3. **Python AI Agent Backend Setup**
+3. **Python backend**
    ```bash
    cd backend-python
    python -m venv venv
-   source venv/Scripts/activate  # Or `venv\Scripts\activate` on Windows
+   .\venv\Scripts\activate
    pip install -r requirements.txt
-   uvicorn main:app --host 0.0.0.0 --port 8000
+   .\venv\Scripts\python.exe -m uvicorn main:app --port 8000
    ```
 
-4. **Go Microservice Backend Setup**
+4. **Go voice engine**
    ```bash
    cd backend-go
-   go mod tidy
-   go run main.go
+   go run .
    ```
 
-5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+5. Open [http://localhost:3000](http://localhost:3000), wait for the voice panel to show **Online**, and tap the mic.
+
+### Demo Without a Trained Model
+
+The current engine uses a stub classifier. To exercise the full WebSocket path without speaking:
+
+```powershell
+cd backend-go
+$env:AMBATUCODE_VOICE_SCRIPT="go,stop"
+go run .
+```
+
+### Environment
+
+- `AMBATUCODE_VOICE_SCRIPT` — comma-separated labels the stub classifier cycles through.
+- `AMBATUCODE_COMMAND_MAP` — override the command map path.
+- `AMBATUCODE_CONFIDENCE_THRESHOLD` — override the default `0.75`.
+- `NEXT_PUBLIC_VOICE_WS_URL` — override the frontend WebSocket URL (default `ws://127.0.0.1:3002/ws/voice`).
 
 ---
 
-## Contributing & Community
+## Project Scope
 
-We warmly welcome contributions. The goal is to keep coding within reach for people whose hands are out of action, whether temporarily or long-term.
-
-If an injury makes part of this editor hard to use, **open an issue**. If you have an idea for a feature that would help you, **open a PR**.
-
-### License
-MIT License.
-
----
-_AmbatuCode — Code the way your hands need to work right now._
+This build focuses on speech recognition and voice-driven editing. The AI chat panel, focus mode, and accessibility/customisation settings from earlier iterations have been removed.

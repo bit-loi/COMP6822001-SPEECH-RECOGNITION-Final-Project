@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from models.schemas import ChatRequest, ChatResponse, Message, UserProfile
 from services.memory_service import MemoryService
 from services.gemini_service import GeminiService
-from services.supabase_service import SupabaseService
 from services.agent_executor import AgentExecutor
 import time
 
@@ -11,8 +10,8 @@ router = APIRouter(prefix="/api/agent", tags=["agent"])
 # Initialize services
 memory_service = MemoryService()
 gemini_service = GeminiService()
-supabase_service = SupabaseService()
 agent_executor = AgentExecutor()
+user_profiles: dict[str, dict] = {}
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_agent(request: ChatRequest):
@@ -46,18 +45,10 @@ async def chat_with_agent(request: ChatRequest):
         )
 
         # 3. Get user profile
-        try:
-            profile = await supabase_service.get_user_profile(request.user_id)
-        except Exception:
-            profile = None
-
+        profile = user_profiles.get(request.user_id)
         if not profile:
-            default_profile = UserProfile(user_id=request.user_id)
-            try:
-                await supabase_service.upsert_user_profile(default_profile)
-            except Exception:
-                pass
-            profile = default_profile.dict()
+            profile = UserProfile(user_id=request.user_id).dict()
+            user_profiles[request.user_id] = profile
 
         # 4. Run the agentic executor (with Function Calling)
         editor_ctx = request.editor_context.dict() if request.editor_context else None
@@ -94,14 +85,15 @@ async def chat_with_agent(request: ChatRequest):
 async def update_user_profile(profile: UserProfile):
     """Update user's cognitive profile"""
     
-    result = await supabase_service.upsert_user_profile(profile)
+    result = profile.dict()
+    user_profiles[profile.user_id] = result
     return {"success": True, "profile": result}
 
 @router.get("/profile/{user_id}")
 async def get_user_profile(user_id: str):
     """Get user's cognitive profile"""
     
-    profile = await supabase_service.get_user_profile(user_id)
+    profile = user_profiles.get(user_id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     

@@ -19,18 +19,6 @@ export interface TerminalTab {
   name: string;
 }
 
-export interface GitHubRepo {
-  id: number;
-  name: string;
-  full_name: string;
-  owner: {
-    login: string;
-  };
-  private: boolean;
-  description: string;
-  updated_at: string;
-}
-
 export const getLanguageFromFilename = (filename: string) => {
   if (!filename) return 'typescript';
   const ext = filename.split('.').pop()?.toLowerCase();

@@ -30,7 +30,6 @@ export const useEditorState = () => {
   const [showFileModal, setShowFileModal] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showGitHubModal, setShowGitHubModal] = useState(false);
   const [modalParentPath, setModalParentPath] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [itemToDelete, setItemToDelete] = useState<FileNode | null>(null);
@@ -89,8 +88,6 @@ export const useEditorState = () => {
     setShowFolderModal,
     showDeleteModal,
     setShowDeleteModal,
-    showGitHubModal,
-    setShowGitHubModal,
     modalParentPath,
     setModalParentPath,
     newItemName,

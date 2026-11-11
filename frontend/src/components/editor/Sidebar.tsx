@@ -8,10 +8,8 @@ import {
   FolderPlus,
   Trash2,
   X,
-  Github,
   Upload,
   FolderUp,
-  LogOut,
   FolderOpen,
   FileCode,
   FileText,
@@ -38,11 +36,6 @@ interface SidebarProps {
   folderInputRef: React.RefObject<HTMLInputElement | null>;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleFolderUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onOpenGitHubModal: () => void;
-  isAuthenticated: boolean;
-  user: any;
-  signInWithGitHub: () => void;
-  signOut: () => void;
   uiLanguage: string;
   onMoveItem: (sourcePath: string, targetFolderPath: string) => void;
 }
@@ -133,11 +126,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   folderInputRef,
   handleFileUpload,
   handleFolderUpload,
-  onOpenGitHubModal,
-  isAuthenticated,
-  user,
-  signInWithGitHub,
-  signOut,
   uiLanguage,
   onMoveItem,
 }) => {
@@ -236,13 +224,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div className="flex items-center space-x-0.5 transition-opacity duration-200">
           <button 
-            onClick={onOpenGitHubModal}
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-            title="Import from GitHub"
-          >
-            <Github className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-          </button>
-          <button 
             onClick={() => onOpenFileModal('')}
             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
             title="New File..."
@@ -332,39 +313,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="space-y-0.5">
             {renderFileTree(fileTree)}
           </div>
-        )}
-      </div>
-
-      {/* Footer (User) */}
-      <div className={`p-3 border-t border-gray-200 dark:border-[#333333] bg-white dark:bg-[#252526] transition-opacity duration-300 ${
-        isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-      }`}>
-        {isAuthenticated && user ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <img 
-                src={user.avatar || "https://github.com/github.png"} 
-                alt="Profile" 
-                className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-700"
-              />
-              <span className="text-xs text-gray-700 dark:text-gray-300 truncate max-w-[100px]">{user.name}</span>
-            </div>
-            <button 
-              onClick={signOut}
-              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-gray-500 dark:text-gray-400"
-              title="Sign Out"
-            >
-              <LogOut className="w-3 h-3" />
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={signInWithGitHub}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-[#24292e] hover:bg-[#1b1f23] text-white rounded text-xs transition-colors"
-          >
-            <Github className="w-3 h-3" />
-            <span>{t("sidebar.sign_in") || "Sign in with GitHub"}</span>
-          </button>
         )}
       </div>
     </div>
