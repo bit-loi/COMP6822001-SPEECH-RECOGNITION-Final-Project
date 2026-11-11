@@ -247,6 +247,9 @@ class EnhanceTranscriptRequest(BaseModel):
                 "ui_language": "id"
             }
         }
+
+
+@router.post("/enhance-transcript")
 async def enhance_voice_transcript(request: EnhanceTranscriptRequest):
     """
     AI-enhanced voice transcript processing:

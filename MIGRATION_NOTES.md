@@ -78,3 +78,26 @@ contains the old name (`.env.example` and CI config do not exist in the repo).
    `git grep -n -i -I "neuravity"` (tracked files, plus `--untracked`). Ignored
    local files (`frontend/.env`, `node_modules`, `.next`, `venv`) are excluded by
    design.
+
+## Phase 2: fix dead `enhance-transcript` route
+
+`backend-python/routers/voice.py`: `enhance_voice_transcript` had no decorator, so
+the endpoint did not exist (the frontend got a 404/405). Added
+`@router.post("/enhance-transcript")`. With the router prefix this is
+`POST /api/voice/enhance-transcript`, which is exactly the URL
+`ChatPanel.tsx` calls (`http://127.0.0.1:8000/api/voice/enhance-transcript`).
+
+Tests: `backend-python/tests/test_voice_routes.py` (route registered, request is
+forwarded to Gemini with the right arguments, graceful fallback when Gemini
+fails). Gemini is stubbed, no network. I removed the decorator temporarily to
+confirm all three tests fail without the fix, then restored it.
+
+### Test tooling added
+- `backend-python/pytest.ini` (`pythonpath = .`, `testpaths = tests`).
+- `backend-python/requirements-dev.txt` (`pytest`, `httpx` for FastAPI's `TestClient`).
+- `pytest` was installed into the local (git-ignored) `venv/` to run the tests.
+- `backend-python/.gitignore` ignored every `*.txt`, which silently hid
+  `requirements.txt`. I added `!requirements.txt` / `!requirements-dev.txt`
+  exceptions so dependency changes are tracked from now on. This is the only
+  `.gitignore` change. `requirements.txt` is therefore newly tracked in this
+  commit, in its pre-migration state; Phase 3 trims it.

@@ -46,3 +46,7 @@ Thumbs.db
 # ===== Executables and Temporary Files =====
 *.exe
 *.txt
+
+# Dependency manifests must stay tracked (the blanket *.txt rule above hid them)
+!requirements.txt
+!requirements-dev.txt
