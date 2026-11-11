@@ -28,7 +28,7 @@ import { TerminalPanel } from '@/components/editor/TerminalPanel';
 import { CustomizationsPanel } from '@/components/editor/EditorSettings';
 import { writeToTerminal } from '@/components/Terminal';
 import { executeCode } from '@/services/compiler';
-import { loadSettings, getMonacoOptions, defaultNeurodivergentSettings, type NeurodivergentEditorSettings } from '@/lib/editorConfig';
+import { loadSettings, getMonacoOptions, defaultAccessibilitySettings, type AccessibilityEditorSettings } from '@/lib/editorConfig';
 import { useToast } from '@/hooks/use-toast';
 
 export default function EditorPage() {
@@ -43,7 +43,7 @@ export default function EditorPage() {
     setMounted(true);
   }, []);
   
-  const [editorSettings, setEditorSettings] = useState<NeurodivergentEditorSettings>(() => {
+  const [editorSettings, setEditorSettings] = useState<AccessibilityEditorSettings>(() => {
     if (typeof window !== 'undefined') return loadSettings();
     return { focusMode: false, pomodoroEnabled: false, pomodoroWorkDuration: 25, pomodoroBreakDuration: 5, showTaskChunking: true, showTimeEstimates: true, reducedVisualNoise: false, disablePopups: false, colorScheme: 'default', minimalistUI: false, useDyslexicFont: false, increasedLetterSpacing: false, customLineHeight: 1.6, enhancedSyntaxColors: false, fontSize: 14, theme: 'dark', uiLanguage: 'en' };
   });
@@ -206,7 +206,7 @@ export default function EditorPage() {
     };
   }, [initialize]);
 
-  // Keyboard shortcuts for neurodivergent accessibility
+  // Keyboard shortcuts for accessibility
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // F11: Toggle Focus Mode
@@ -443,7 +443,7 @@ export default function EditorPage() {
             case 'toggle_focus_mode': {
               const newState = action.state === 'on' ? true : action.state === 'off' ? false : !focusMode;
               setFocusMode(newState);
-              setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, focusMode: newState }));
+              setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, focusMode: newState }));
               break;
             }
 
@@ -461,14 +461,14 @@ export default function EditorPage() {
             case 'toggle_theme': {
               if (action.theme === 'light') {
                 setTheme('light');
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, theme: 'light' }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, theme: 'light' }));
               } else if (action.theme === 'dark') {
                 setTheme('dark');
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, theme: 'dark' }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, theme: 'dark' }));
               } else {
                 const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
                 setTheme(newTheme);
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, theme: newTheme }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, theme: newTheme }));
               }
               break;
             }
@@ -515,10 +515,10 @@ export default function EditorPage() {
             }
 
             case 'update_cognitive_settings': {
-              setEditorSettings((prev: NeurodivergentEditorSettings) => ({
+              setEditorSettings((prev: AccessibilityEditorSettings) => ({
                 ...prev,
-                useDyslexicFont: action.dyslexia_mode !== undefined ? action.dyslexia_mode : prev.useDyslexicFont,
-                increasedLetterSpacing: action.dyslexia_mode !== undefined ? action.dyslexia_mode : prev.increasedLetterSpacing,
+                useDyslexicFont: action.readability_mode !== undefined ? action.readability_mode : prev.useDyslexicFont,
+                increasedLetterSpacing: action.readability_mode !== undefined ? action.readability_mode : prev.increasedLetterSpacing,
                 showTaskChunking: action.task_chunking !== undefined ? action.task_chunking : prev.showTaskChunking,
                 showTimeEstimates: action.time_estimates !== undefined ? action.time_estimates : prev.showTimeEstimates,
                 reducedVisualNoise: action.reduced_noise !== undefined ? action.reduced_noise : prev.reducedVisualNoise,
@@ -529,22 +529,22 @@ export default function EditorPage() {
 
             case 'set_ui_language': {
               if (action.language) {
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, uiLanguage: action.language }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, uiLanguage: action.language }));
               }
               break;
             }
 
             case 'control_pomodoro': {
               if (action.state === 'start') {
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, pomodoroEnabled: true }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroEnabled: true }));
               } else if (action.state === 'stop') {
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, pomodoroEnabled: false }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroEnabled: false }));
               }
               if (action.work_minutes) {
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, pomodoroWorkDuration: action.work_minutes }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroWorkDuration: action.work_minutes }));
               }
               if (action.break_minutes) {
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, pomodoroBreakDuration: action.break_minutes }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, pomodoroBreakDuration: action.break_minutes }));
               }
               break;
             }
@@ -567,13 +567,13 @@ export default function EditorPage() {
 
             case 'set_font_size': {
               if (action.size) {
-                setEditorSettings((prev: NeurodivergentEditorSettings) => ({ ...prev, fontSize: action.size }));
+                setEditorSettings((prev: AccessibilityEditorSettings) => ({ ...prev, fontSize: action.size }));
               }
               break;
             }
 
             case 'reset_settings': {
-              setEditorSettings(defaultNeurodivergentSettings);
+              setEditorSettings(defaultAccessibilitySettings);
               setFocusMode(false);
               setTheme('dark');
               break;

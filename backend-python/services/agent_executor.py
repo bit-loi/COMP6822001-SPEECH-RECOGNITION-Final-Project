@@ -291,17 +291,17 @@ TOOLS = [
             )
         ),
 
-        # 7. Update Cognitive Settings (ADHD, Dyslexia, Visual)
+        # 7. Update accessibility settings (readability, task chunking, visual)
         genai.protos.FunctionDeclaration(
             name="update_cognitive_settings",
             description=(
-                "Update specialized cognitive settings like Dyslexia Mode, Task Chunking, "
+                "Update accessibility settings like Readability Mode, Task Chunking, "
                 "Time Estimates, or Reduced Visual Noise."
             ),
             parameters=genai.protos.Schema(
                 type=genai.protos.Type.OBJECT,
                 properties={
-                    "dyslexia_mode": genai.protos.Schema(type=genai.protos.Type.BOOLEAN, description="Enable specialized font and spacing for dyslexia"),
+                    "readability_mode": genai.protos.Schema(type=genai.protos.Type.BOOLEAN, description="Enable specialized font and spacing for easier reading"),
                     "task_chunking": genai.protos.Schema(type=genai.protos.Type.BOOLEAN, description="Break down complex tasks into visual steps"),
                     "time_estimates": genai.protos.Schema(type=genai.protos.Type.BOOLEAN, description="Show estimated completion time for code blocks"),
                     "reduced_noise": genai.protos.Schema(type=genai.protos.Type.BOOLEAN, description="Hide non-essential UI elements to reduce sensory overload"),
@@ -508,7 +508,7 @@ You can use tools to:
 - toggle_focus_mode: Enable/disable distraction-free focus mode
 - toggle_chat_panel: Open/close the AI chat panel
 - toggle_theme: Change between light mode and dark mode
-- update_cognitive_settings: Toggle Dyslexia mode, Task Chunking, Time Estimates, or Reduced Noise
+- update_cognitive_settings: Toggle Readability mode, Task Chunking, Time Estimates, or Reduced Noise
 - set_ui_language: Change the language of the entire editor interface
 - control_pomodoro: Manage work/break timer sessions
 - set_font_size: Make editor text larger or smaller
@@ -517,10 +517,10 @@ You can use tools to:
 - search_code: Find patterns in the project
 
 === INSTRUCTIONS ===
-1. When user asks you to DO something (create, write, fix, run, command, commit, delete, remove, folder, file, focus, close chat, dark mode, light mode, theme, dyslexia, pomodoro, font size, change language), USE A TOOL — don't just describe it
+1. When user asks you to DO something (create, write, fix, run, command, commit, delete, remove, folder, file, focus, close chat, dark mode, light mode, theme, readability, pomodoro, font size, change language), USE A TOOL — don't just describe it
 2. When user asks a question, answer in text
 3. Always explain what you're about to do in simple, friendly language — in the {ui_language} language.
-4. For neurodivergent users: be concise, clear, and step-by-step
+4. For users with limited hand mobility or energy: be concise, clear, and step-by-step
 5. After using a tool, explain what happened in {ui_language}.
 
 === REQUEST ===

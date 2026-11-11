@@ -14,12 +14,12 @@ export const EmotionalStateEnum = z.enum([
 export type EmotionalState = z.infer<typeof EmotionalStateEnum>;
 
 /**
- * User preferences for neurodivergent-friendly adaptations
+ * User preferences for accessibility and communication adaptations
  */
 export const UserPreferencesSchema = z.object({
-  adhd: z.boolean().default(false),
-  autism: z.boolean().default(false),
-  dyslexia: z.boolean().default(false),
+  lowEnergy: z.boolean().default(false),
+  explicitSteps: z.boolean().default(false),
+  plainLanguage: z.boolean().default(false),
 });
 
 export type UserPreferences = z.infer<typeof UserPreferencesSchema>;

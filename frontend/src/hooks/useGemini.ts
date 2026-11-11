@@ -88,7 +88,7 @@ export function useEmotionalAnalysis() {
  * ```tsx
  * function HintPanel() {
  *   const { hint, loading, generateHint } = useAdaptiveHint();
- *   const preferences = { adhd: true, autism: false, dyslexia: false };
+ *   const preferences = { lowEnergy: true, explicitSteps: false, plainLanguage: false };
  *   
  *   const handleGetHint = async () => {
  *     await generateHint({
@@ -111,9 +111,9 @@ export function useAdaptiveHint() {
       problem: string;
       emotionalState?: EmotionalAnalysis;
       userPreferences: {
-        adhd: boolean;
-        autism: boolean;
-        dyslexia: boolean;
+        lowEnergy: boolean;
+        explicitSteps: boolean;
+        plainLanguage: boolean;
       };
       context?: string;
     }): Promise<AdaptiveHint> => {
@@ -162,7 +162,7 @@ export function useAdaptiveHint() {
  *   const handleBreakdown = async () => {
  *     const result = await breakdownTask({
  *       task: "Build a REST API",
- *       preferences: { adhd: true, autism: false, dyslexia: false },
+ *       preferences: { lowEnergy: true, explicitSteps: false, plainLanguage: false },
  *     });
  *     
  *     result.subtasks.forEach(task => {
@@ -181,9 +181,9 @@ export function useTaskBreakdown() {
     async (input: {
       task: string;
       preferences: {
-        adhd: boolean;
-        autism: boolean;
-        dyslexia: boolean;
+        lowEnergy: boolean;
+        explicitSteps: boolean;
+        plainLanguage: boolean;
       };
       complexity?: 'low' | 'medium' | 'high';
     }): Promise<TaskBreakdown> => {

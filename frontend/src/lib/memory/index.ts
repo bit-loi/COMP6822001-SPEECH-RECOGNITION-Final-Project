@@ -1,7 +1,7 @@
 /**
  * AmbatuCode Memory System
  * 
- * Three-tier memory system to reduce context switching for neurodivergent developers
+ * Three-tier memory system to reduce context switching for developers returning to a project during recovery
  */
 
 // Main Context Manager

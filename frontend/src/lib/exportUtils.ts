@@ -35,7 +35,7 @@ function messagesToMarkdown(messages: Message[]): string {
     ``,
     `> **Tanggal:** ${sessionDate}  `,
     `> **Jumlah pesan:** ${messages.length}  `,
-    `> **Dibuat oleh:** AmbatuCode — Neurodivergent-Friendly Code Editor`,
+    `> **Dibuat oleh:** AmbatuCode — Voice-Controlled Code Editor`,
     ``,
     `---`,
     ``,

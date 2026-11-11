@@ -82,14 +82,14 @@ const overwhelmed = await gemini.analyzeEmotionalState({
 
 ## 2. Generate Adaptive Hints
 
-Get personalized hints based on emotional state and neurodivergent preferences:
+Get personalized hints based on emotional state and accessibility preferences:
 
 ```typescript
 import { getGeminiService } from '@/lib/gemini';
 
 const gemini = getGeminiService();
 
-// For a developer with ADHD who is frustrated
+// For a developer with low energy who is frustrated
 const hint = await gemini.generateAdaptiveHint({
   code: `
     function calculateTotal(items) {
@@ -109,9 +109,9 @@ const hint = await gemini.generateAdaptiveHint({
     recommendedAction: 'Take a break',
   },
   userPreferences: {
-    adhd: true,
-    autism: false,
-    dyslexia: false,
+    lowEnergy: true,
+    explicitSteps: false,
+    plainLanguage: false,
   },
 });
 
@@ -131,26 +131,26 @@ console.log(hint);
 ### Different Preference Combinations
 
 ```typescript
-// Autism preference - explicit and structured
-const autismHint = await gemini.generateAdaptiveHint({
+// Explicit-step preference - structured and literal
+const explicitHint = await gemini.generateAdaptiveHint({
   code: 'async function getData() { /* ... */ }',
   problem: 'When should I use async/await vs promises?',
   userPreferences: {
-    adhd: false,
-    autism: true,
-    dyslexia: false,
+    lowEnergy: false,
+    explicitSteps: true,
+    plainLanguage: false,
   },
 });
 // Returns: Very explicit rules, concrete examples, clear success criteria
 
-// Dyslexia preference - simple language
-const dyslexiaHint = await gemini.generateAdaptiveHint({
+// Plain-language preference - simple language
+const plainHint = await gemini.generateAdaptiveHint({
   code: 'const memoizedCallback = useCallback(() => {}, []);',
   problem: 'What is memoization?',
   userPreferences: {
-    adhd: false,
-    autism: false,
-    dyslexia: true,
+    lowEnergy: false,
+    explicitSteps: false,
+    plainLanguage: true,
   },
 });
 // Returns: Plain language, no jargon, short sentences
@@ -160,9 +160,9 @@ const combinedHint = await gemini.generateAdaptiveHint({
   code: '/* complex code */',
   problem: 'Help me refactor this',
   userPreferences: {
-    adhd: true,
-    autism: true,
-    dyslexia: true,
+    lowEnergy: true,
+    explicitSteps: true,
+    plainLanguage: true,
   },
 });
 // Returns: Short, clear, explicit, with time estimates
@@ -177,13 +177,13 @@ import { getGeminiService } from '@/lib/gemini';
 
 const gemini = getGeminiService();
 
-// Break down a task for someone with ADHD
+// Break down a task for a developer with low energy
 const breakdown = await gemini.breakdownTask({
   task: 'Build a REST API with user authentication and rate limiting',
   preferences: {
-    adhd: true,
-    autism: false,
-    dyslexia: false,
+    lowEnergy: true,
+    explicitSteps: false,
+    plainLanguage: false,
   },
 });
 

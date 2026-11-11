@@ -10,7 +10,7 @@ def analyze_code_snippet(code: str, language: str) -> dict:
 
 def explain_error_plain_language(error_message: str, language: str) -> str:
     """
-    Translate technical error messages into a more plain, neurodivergent-friendly language.
+    Translate technical error messages into plain, low-effort language.
     
     Args:
         error_message: The raw technical error message.

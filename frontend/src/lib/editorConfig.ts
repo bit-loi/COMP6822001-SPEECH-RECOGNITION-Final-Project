@@ -1,11 +1,11 @@
 /**
- * Monaco Editor Configuration for Neurodivergent-Friendly Features
+ * Monaco Editor Configuration for Accessibility Features
  */
 
 import type { editor } from "monaco-editor";
 
-export interface NeurodivergentEditorSettings {
-  // ADHD Support
+export interface AccessibilityEditorSettings {
+  // Focus support
   focusMode: boolean;
   pomodoroEnabled: boolean;
   pomodoroWorkDuration: number; // minutes
@@ -13,13 +13,13 @@ export interface NeurodivergentEditorSettings {
   showTaskChunking: boolean;
   showTimeEstimates: boolean;
 
-  // Autism Support
+  // Visual comfort
   reducedVisualNoise: boolean;
   disablePopups: boolean;
   colorScheme: "default" | "low-contrast" | "high-contrast";
   minimalistUI: boolean;
 
-  // Dyslexia Support
+  // Readability
   useDyslexicFont: boolean;
   increasedLetterSpacing: boolean;
   customLineHeight: number;
@@ -31,8 +31,8 @@ export interface NeurodivergentEditorSettings {
   uiLanguage: "en" | "id" | "es" | "ja" | "fr" | "de" | "zh" | "ko" | "ar" | "ru" | "pt" | "it";
 }
 
-export const defaultNeurodivergentSettings: NeurodivergentEditorSettings = {
-  // ADHD
+export const defaultAccessibilitySettings: AccessibilityEditorSettings = {
+  // Focus
   focusMode: false,
   pomodoroEnabled: false,
   pomodoroWorkDuration: 25,
@@ -40,13 +40,13 @@ export const defaultNeurodivergentSettings: NeurodivergentEditorSettings = {
   showTaskChunking: true,
   showTimeEstimates: true,
 
-  // Autism
+  // Visual comfort
   reducedVisualNoise: false,
   disablePopups: false,
   colorScheme: "default",
   minimalistUI: false,
 
-  // Dyslexia
+  // Readability
   useDyslexicFont: false,
   increasedLetterSpacing: false,
   customLineHeight: 1.6,
@@ -59,7 +59,7 @@ export const defaultNeurodivergentSettings: NeurodivergentEditorSettings = {
 };
 
 export function getMonacoOptions(
-  settings: NeurodivergentEditorSettings
+  settings: AccessibilityEditorSettings
 ): editor.IStandaloneEditorConstructionOptions {
   const baseOptions: editor.IStandaloneEditorConstructionOptions = {
     fontSize: settings.fontSize,
@@ -128,7 +128,7 @@ export function getMonacoOptions(
 }
 
 export function getThemeName(
-  theme: NeurodivergentEditorSettings["theme"]
+  theme: AccessibilityEditorSettings["theme"]
 ): string {
   switch (theme) {
     case "light":
@@ -161,7 +161,7 @@ export const SUPPORTED_LANGUAGES = [
 
 export const STORAGE_KEY = "ambatucode-editor-settings";
 
-export function saveSettings(settings: NeurodivergentEditorSettings): void {
+export function saveSettings(settings: AccessibilityEditorSettings): void {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
@@ -171,16 +171,16 @@ export function saveSettings(settings: NeurodivergentEditorSettings): void {
   }
 }
 
-export function loadSettings(): NeurodivergentEditorSettings {
+export function loadSettings(): AccessibilityEditorSettings {
   if (typeof window !== "undefined") {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return { ...defaultNeurodivergentSettings, ...JSON.parse(saved) };
+        return { ...defaultAccessibilitySettings, ...JSON.parse(saved) };
       }
     } catch (error) {
       // Silent fail - return defaults
     }
   }
-  return defaultNeurodivergentSettings;
+  return defaultAccessibilitySettings;
 }

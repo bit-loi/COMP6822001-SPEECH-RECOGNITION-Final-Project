@@ -7,7 +7,7 @@ import {
   getMonacoOptions,
   getThemeName,
   loadSettings,
-  type NeurodivergentEditorSettings,
+  type AccessibilityEditorSettings,
 } from "@/lib/editorConfig";
 import { FocusMode, PomodoroTimer } from "./FocusMode";
 
@@ -15,7 +15,7 @@ interface MonacoEditorProps {
   defaultValue?: string;
   defaultLanguage?: string;
   onChange?: (value: string | undefined) => void;
-  settings: NeurodivergentEditorSettings;
+  settings: AccessibilityEditorSettings;
 }
 
 export function MonacoEditor({
@@ -58,9 +58,9 @@ export function MonacoEditor({
     // Focus the editor
     editor.focus();
 
-    // Custom theme for dyslexia-friendly colors
+    // Custom theme for enhanced syntax readability
     if (settings.enhancedSyntaxColors) {
-      monaco.editor.defineTheme("dyslexia-friendly", {
+      monaco.editor.defineTheme("readability-friendly", {
         base: settings.theme === "light" ? "vs" : "vs-dark",
         inherit: true,
         rules: [
@@ -73,7 +73,7 @@ export function MonacoEditor({
         ],
         colors: {},
       });
-      monaco.editor.setTheme("dyslexia-friendly");
+      monaco.editor.setTheme("readability-friendly");
     }
   };
 
@@ -91,7 +91,7 @@ export function MonacoEditor({
 
   const monacoOptions = getMonacoOptions(settings);
   const themeName = settings.enhancedSyntaxColors
-    ? "dyslexia-friendly"
+    ? "readability-friendly"
     : getThemeName(settings.theme);
 
   return (

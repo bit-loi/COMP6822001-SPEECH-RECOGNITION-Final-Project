@@ -1,7 +1,7 @@
 /**
  * AmbatuCode Gemini Service
  * 
- * AI-powered emotional analysis and adaptive learning for neurodivergent developers
+ * AI-powered emotional analysis and adaptive learning for developers working with limited hand mobility
  */
 
 // Main service

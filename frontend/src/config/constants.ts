@@ -5,7 +5,7 @@
 export const APP_CONFIG = {
   name: "AmbatuCode",
   version: "0.1.0",
-  description: "A neurodivergent-friendly code editor",
+  description: "A voice-controlled code editor for developers recovering from hand injuries",
 } as const;
 
 export const AI_CONFIG = {

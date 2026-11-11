@@ -1,20 +1,20 @@
 # AmbatuCode Gemini Service
 
-A robust, production-ready AI service for emotional analysis and adaptive learning, specifically designed for neurodivergent developers.
+A robust, production-ready AI service for emotional analysis and adaptive learning, built for developers coding with limited hand mobility or energy.
 
 ## 🎯 Features
 
 ### 1. **Emotional State Analysis**
 - Detects developer emotional states: frustrated, confused, focused, overwhelmed, flow
-- Considers neurodivergent patterns (hyperfocus, task switching)
+- Considers focus patterns (deep sessions, task switching, fatigue)
 - Provides cognitive load metrics (0-100%)
 - Offers actionable recommendations
 
 ### 2. **Adaptive Hints**
 - Adjusts explanation style based on emotional state
-- Customizes for ADHD (time estimates, small chunks)
-- Adapts for autism (explicit examples, no ambiguity)
-- Simplifies for dyslexia (plain language, short sentences)
+- Customizes for low energy (time estimates, small chunks)
+- Adapts for explicit-step needs (explicit examples, no ambiguity)
+- Simplifies for plain-language needs (plain language, short sentences)
 - Includes code examples and step-by-step guides
 
 ### 3. **Task Breakdown**
@@ -22,7 +22,7 @@ A robust, production-ready AI service for emotional analysis and adaptive learni
 - Provides realistic time estimates
 - Tracks dependencies between tasks
 - Rates complexity levels
-- Optimizes for neurodivergent work patterns
+- Optimizes for low-effort, interruption-friendly work patterns
 
 ### 4. **Robust Error Handling**
 - Exponential backoff retry logic
@@ -114,9 +114,9 @@ const hint = await gemini.generateAdaptiveHint({
   problem: 'How do I add TypeScript types?',
   emotionalState: analysis, // from previous step
   userPreferences: {
-    adhd: true,      // Time estimates, small steps
-    autism: false,
-    dyslexia: false,
+    lowEnergy: true,      // Time estimates, small steps
+    explicitSteps: false,
+    plainLanguage: false,
   },
 });
 
@@ -133,9 +133,9 @@ hint.nextSteps.forEach(step => {
 const breakdown = await gemini.breakdownTask({
   task: 'Build a REST API with authentication',
   preferences: {
-    adhd: true,
-    autism: false,
-    dyslexia: false,
+    lowEnergy: true,
+    explicitSteps: false,
+    plainLanguage: false,
   },
 });
 
@@ -231,7 +231,7 @@ await generateHint({
   code,
   problem,
   emotionalState,
-  userPreferences: { adhd: true, autism: false, dyslexia: false },
+  userPreferences: { lowEnergy: true, explicitSteps: false, plainLanguage: false },
 });
 ```
 
@@ -242,7 +242,7 @@ const { breakdown, loading, error, breakdownTask, reset } = useTaskBreakdown();
 
 await breakdownTask({
   task: 'Build feature X',
-  preferences: { adhd: true, autism: false, dyslexia: false },
+  preferences: { lowEnergy: true, explicitSteps: false, plainLanguage: false },
 });
 ```
 
@@ -464,4 +464,4 @@ Part of the AmbatuCode project.
 
 ---
 
-**Built with ❤️ for neurodivergent developers**
+**Built for developers whose hands need a break**

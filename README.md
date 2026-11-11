@@ -1,24 +1,35 @@
-# AmbatuCode 🧠🚀
+# AmbatuCode
 
-**A neurodivergent-friendly AI-powered code editor web application.** Designed from the ground up to reduce barriers for developers with ADHD, Autism, Dyslexia, and other neurodivergent conditions by blending deep AI automation with high sensory customizability.
+**A voice-controlled AI-powered code editor for developers recovering from hand injuries.** Built so coding does not have to stop while your hands heal: speak what you want, and the editor turns it into file operations, code edits, terminal commands, and commits.
 
----
-
-## 🌩️ Core Problems Solved
-
-Traditional code editors create barriers for neurodivergent developers:
-- **ADHD**: Context switching, time blindness, executive dysfunction, cognitive overload from complex menus.
-- **Autism**: Sensory overload, need for predictability, struggling with ambiguous unstructured error messages.
-- **Dyslexia**: Reading dense code, syntax confusion, overwhelming file layouts.
-
-AmbatuCode solves this with **Voice-to-Code Automation**, **Cognitive Needs Customization**, and a **Proactive AI Agent** that handles the boring, overwhelming stuff for you.
+> **Final Project — Speech Recognition.** This repository is the final project for the Speech Recognition course. The speech path is deliberately classical: local MFCC features and a non-deep-learning keyword classifier over Google Speech Commands v2 (35 keywords + `silence` + `unknown`), with no cloud speech APIs.
 
 ---
 
-## 🌟 Key Features
+## The Problem
 
-### 1. 🤖 True AI Automation Agent (New!)
-Unlike typical chat bots, the AmbatuCode AI acts directly on your workspace. Tell it what you want, and it will:
+A hand injury — RSI, carpal tunnel surgery, a fracture, tendonitis — takes typing and mouse work off the table for weeks or months. Most editors assume both are available, so recovery means losing momentum on projects you care about.
+
+AmbatuCode is built around that constraint:
+- **Typing hurts**: repetitive keystrokes aggravate the injury and slow recovery.
+- **Shortcuts and menus demand the exact motions that hurt**: chords, drags, and precise clicks.
+- **Time away costs context**: after a break you have to rebuild the mental model of the codebase.
+- **Assistive tools are usually separate from the editor**: dictation writes into a box, not into your project.
+
+AmbatuCode closes that gap with on-device voice commands, an AI agent that performs the mechanical work, and comfort settings that reduce the physical effort per action.
+
+---
+
+## Key Features
+
+### 1. Voice-to-Code Commands
+Control the editor without touching the keyboard.
+- Speech is recognized **locally** by the Go backend (MFCC features plus a lightweight keyword classifier), so short commands like `go`, `stop`, `up`, `down`, `left`, `right`, `yes`, `no`, `undo`, `redo`, and `zero`–`nine` map straight to editor actions.
+- No cloud speech API is used and no audio is stored.
+- The AI layer can also translate a spoken intent ("bikin fungsi hello world", "add a test for this file") into actual cursor and file modifications.
+
+### 2. True AI Automation Agent (New!)
+Unlike typical chat bots, the AmbatuCode AI acts directly on your workspace, so you describe the change instead of performing it:
 - **`create_file` & `delete_file`**: Auto-create or remove files in your project.
 - **`create_folder` & `delete_folder`**: Instantly generate or remove directories.
 - **`insert_code`**: Append code directly to your active text editor.
@@ -26,47 +37,41 @@ Unlike typical chat bots, the AmbatuCode AI acts directly on your workspace. Tel
 - **`run_command`**: Execute bash commands securely in the integrated terminal (e.g., `npm install`).
 - **`git_commit_push`**: Automatically stage changes, generate a conventional commit message, and push to GitHub!
 
-### 2. 🎙️ Voice-to-Code Contextual Commands
-Don't want to type? Speak it. 
-- Integrated Voice STT (Speech-to-Text) powered by a custom Python backend (using `ffmpeg` & Gemini Flash).
-- The AI automatically translates raw intent ("bikin fungsi hello world") into actual cursor modifications.
+### 3. Accessibility & Comfort Panel
+One-click settings that lower the physical effort of each session:
+- **Readability Mode**: Bigger line heights, custom spacing, OpenDyslexic-styled fonts.
+- **Focus Mode**: Instantly hides all distractions (sidebars, terminal, chat) through `F11`.
+- **Comfort Settings**: Disable overly flashy animations, pick comfortable high-contrast themes, and adjust font size without menus.
 
-### 3. 🛡️ Neurodivergent Customizations Panel
-One-click settings tailored for specific needs:
-- **Dyslexia Mode**: Bigger line heights, custom spacing, OpenDyslexic-styled fonts.
-- **ADHD / Focus Mode**: Instantly hides all distractions (sidebars, terminal, chat) through `F11`.
-- **Sensory Settings**: Disable overly flashy animations, pick comfortable high-contrast themes.
+### 4. Adaptive Memory System
+- **Conversation Memory**: The AI remembers context from previous sessions, so returning after a break does not mean starting over.
+- **User Profile Memory**: The AI learns your working preferences (e.g., "explain step-by-step") and adjusts its language and tone.
+- **Multilingual Native**: Speak/type in English, Indonesian, Spanish, or Japanese, and the AI matches your language.
 
-### 4. 🧠 Adaptive Memory System
-- **Conversation Memory**: The AI remembers context from previous sessions.
-- **User Profile Memory**: The AI learns your cognitive preferences (e.g., "explain step-by-step for ADHD") and automatically adjusts its language and tone.
-- **Multilingual Native**: Speak/type in English, Indonesian, Spanish, or Japanese, and the AI matches your language perfectly.
-
-### 5. 📥 One-Click Therapy Sharing & Exporting
-- Export your coding conversation into a beautifully formatted Markdown/PDF transcript.
+### 5. Session Sharing & Exporting
+- Export your coding conversation into a formatted Markdown/PDF transcript.
 - Zip and download your entire project workspace locally.
-- Perfect for sharing context, struggles, and achievements with therapists or coaches.
+- Useful for keeping a recovery log, handing work to a teammate, or sharing progress with an occupational therapist.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js 14 App Router, TypeScript, Tailwind CSS, Monaco Editor, Zustand.
 - **Backend (Python)**: FastAPI, Uvicorn, Python-based Agentic Tool Executors.
-- **Backend (Go)**: Go Fiber (for fast socket routing and microservices).
-- **AI Core**: Google Gemini 2.5 Flash API (Function Calling & Embedding).
+- **Backend (Go)**: Go Fiber (fast socket routing and microservices), on-device voice pipeline (MFCC + keyword classifier) over WebSocket.
+- **AI Core**: Google Gemini 2.5 Flash API (Function Calling & Embedding) for chat and the agent, not for speech recognition.
 - **Database**: PostgreSQL / Supabase.
 - **Integrations**: GitHub OAuth, JSZip.
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - Node.js 20+
 - Python 3.10+
 - Go 1.21+
-- FFmpeg (for voice processing via backend)
 - Google Gemini API Key
 
 ### Quick Start
@@ -107,14 +112,14 @@ One-click settings tailored for specific needs:
 
 ---
 
-## ❤️ Contributing & Community
+## Contributing & Community
 
-We warmly welcome contributions! Our goal is to make the coding landscape inclusive for **all** neurotypes. 
+We warmly welcome contributions. The goal is to keep coding within reach for people whose hands are out of action, whether temporarily or long-term.
 
-If you are a neurodivergent coder and find something overwhelming, **open an issue**. If you have an idea for a feature that would help you, **open a PR**.
+If an injury makes part of this editor hard to use, **open an issue**. If you have an idea for a feature that would help you, **open a PR**.
 
 ### License
 MIT License.
 
 ---
-_AmbatuCode — Code the way your brain works best._
+_AmbatuCode — Code the way your hands need to work right now._

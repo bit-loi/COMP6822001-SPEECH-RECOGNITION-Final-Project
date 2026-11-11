@@ -6,3 +6,7 @@ node_modules/
 *.ckpt
 *.h5
 data/
+
+# Local editor / AI assistant tooling (not part of the project)
+.opencode/
+.github/

@@ -13,15 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AmbatuCode - Neurodivergent-Friendly Code Editor",
+  title: "AmbatuCode - Voice-Controlled Code Editor",
   description:
-    "An adaptive code editor designed for neurodivergent developers with AI-powered features, emotional state detection, and wellbeing monitoring.",
+    "A voice-controlled code editor for developers recovering from hand injuries, with an AI agent that creates files, runs commands, and commits changes.",
   keywords: [
     "code editor",
-    "neurodivergent",
-    "ADHD",
-    "autism",
-    "dyslexia",
+    "voice control",
+    "speech recognition",
+    "hand injury",
     "accessibility",
     "AI",
     "developer tools",
@@ -36,9 +35,9 @@ export const metadata: Metadata = {
     apple: '/logo.png?v=1',
   },
   openGraph: {
-    title: "AmbatuCode - Neurodivergent-Friendly Code Editor",
+    title: "AmbatuCode - Voice-Controlled Code Editor",
     description:
-      "An adaptive code editor designed for neurodivergent developers",
+      "A voice-controlled code editor for developers recovering from hand injuries",
     type: "website",
     images: ['/logo.png'],
   },

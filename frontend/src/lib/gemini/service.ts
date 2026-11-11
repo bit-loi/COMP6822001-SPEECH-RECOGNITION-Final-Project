@@ -19,7 +19,7 @@ import { RateLimiter, retryWithBackoff, withGracefulDegradation } from './utils'
  * AmbatuCode Gemini Service
  * 
  * A robust service for AI-powered emotional analysis and adaptive learning
- * designed specifically for neurodivergent developers.
+ * designed for developers coding with limited hand mobility and low energy.
  * 
  * Features:
  * - Emotional state detection from code and messages
@@ -61,7 +61,7 @@ export class GeminiService {
    * - Overwhelm: too many errors, complex problems
    * - Flow: smooth progress, minimal errors
    * 
-   * Considers neurodivergent patterns like hyperfocus and task switching.
+   * Considers focus patterns like long sessions and task switching.
    * 
    * @param input - Code and user message to analyze
    * @returns Emotional analysis with recommendations
@@ -116,9 +116,9 @@ export class GeminiService {
    * 
    * Adapts explanation style based on:
    * - Current emotional state (frustrated → shorter, encouraging)
-   * - ADHD: time estimates, clear action items, chunked information
-   * - Autism: explicit examples, no ambiguity, structured format
-   * - Dyslexia: plain language, avoid jargon, clear formatting
+   * - Low energy: time estimates, clear action items, chunked information
+   * - Explicit steps: concrete examples, no ambiguity, structured format
+   * - Plain language: avoid jargon, clear formatting
    * 
    * @param context - Problem context and user preferences
    * @returns Adaptive hint with code examples and next steps
@@ -129,11 +129,11 @@ export class GeminiService {
    *   code: 'function add(a, b) { return a + b }',
    *   problem: 'How do I add type safety?',
    *   emotionalState: analysis,
-   *   userPreferences: { adhd: true, autism: false, dyslexia: false }
+   *   userPreferences: { lowEnergy: true, explicitSteps: false, plainLanguage: false }
    * });
    * 
    * console.log(hint.explanation);
-   * console.log(hint.nextSteps); // Time-estimated steps for ADHD
+   * console.log(hint.nextSteps); // Time-estimated steps for low energy
    * ```
    */
   async generateAdaptiveHint(
@@ -177,9 +177,9 @@ export class GeminiService {
    * - Complexity ratings
    * 
    * Adapts to user preferences:
-   * - ADHD: smaller chunks, realistic time estimates
-   * - Autism: explicit dependencies, clear structure
-   * - Dyslexia: simple language, clear descriptions
+   * - Low energy: smaller chunks, realistic time estimates
+   * - Explicit steps: explicit dependencies, clear structure
+   * - Plain language: simple language, clear descriptions
    * 
    * @param input - Task description and user preferences
    * @returns Task breakdown with subtasks and estimates
@@ -188,7 +188,7 @@ export class GeminiService {
    * ```typescript
    * const breakdown = await service.breakdownTask({
    *   task: 'Build a REST API with authentication',
-   *   preferences: { adhd: true, autism: false, dyslexia: false }
+   *   preferences: { lowEnergy: true, explicitSteps: false, plainLanguage: false }
    * });
    * 
    * breakdown.subtasks.forEach(task => {
@@ -239,7 +239,7 @@ export class GeminiService {
       ? `\n\nTime spent on this problem: ${input.timeSpent} minutes`
       : '';
 
-    return `You are an expert at analyzing developer emotional states and cognitive load, with special attention to neurodivergent patterns.
+    return `You are an expert at analyzing developer emotional states and cognitive load, with special attention to signs of pain, fatigue, and overexertion during injury recovery.
 
 Analyze the following code and user message to determine their emotional state:
 
@@ -259,10 +259,10 @@ Consider these patterns:
 - OVERWHELMED: Too many errors, complex problems, scattered attempts, "too much"
 - FLOW: Smooth progress, minimal errors, building on previous work, engaged
 
-Also consider neurodivergent patterns:
-- Hyperfocus (autism/ADHD): Deep dive into details, losing track of time
-- Task switching difficulty (ADHD): Multiple incomplete attempts
-- Pattern recognition (autism): Seeking explicit rules and structure
+Also consider these patterns:
+- Deep focus: Long unbroken sessions, losing track of time
+- Task switching difficulty: Multiple incomplete attempts
+- Fatigue: Repeated mistakes late in a session, giving up on a task
 
 Return a JSON object with this exact structure:
 {
@@ -293,7 +293,7 @@ Return ONLY the JSON object, no additional text.`;
 
     const preferencesContext = this.buildPreferencesContext(context.userPreferences);
 
-    return `You are an expert programming tutor who adapts explanations for neurodivergent learners.
+    return `You are an expert programming tutor who adapts explanations for developers who need low-effort, readable answers.
 
 PROBLEM:
 "${context.problem}"
@@ -327,8 +327,8 @@ Return a JSON object with this exact structure:
 Guidelines for next steps:
 - Each step should be concrete and actionable
 - Include realistic time estimates (5-30 minutes per step)
-- For ADHD: keep steps small (5-15 min each)
-- For autism: be explicit about what success looks like
+- For low energy: keep steps small (5-15 min each)
+- For explicit-step preference: state what success looks like
 - Order steps by dependencies
 
 Return ONLY the JSON object, no additional text.`;
@@ -339,9 +339,9 @@ Return ONLY the JSON object, no additional text.`;
    */
   private buildPreferencesContext(preferences: any): string {
     const prefs = [];
-    if (preferences.adhd) prefs.push('ADHD');
-    if (preferences.autism) prefs.push('Autism');
-    if (preferences.dyslexia) prefs.push('Dyslexia');
+    if (preferences.lowEnergy) prefs.push('Low energy');
+    if (preferences.explicitSteps) prefs.push('Explicit steps');
+    if (preferences.plainLanguage) prefs.push('Plain language');
     return prefs.length > 0 ? prefs.join(', ') : 'None specified';
   }
 
@@ -382,20 +382,20 @@ Return ONLY the JSON object, no additional text.`;
       }
     }
 
-    // Neurodivergent adaptations
-    if (context.userPreferences.adhd) {
-      guidelines.push('- Include time estimates for each step (crucial for ADHD)');
+    // Accessibility adaptations
+    if (context.userPreferences.lowEnergy) {
+      guidelines.push('- Include time estimates for each step (crucial when energy is limited)');
       guidelines.push('- Use bullet points and clear structure');
       guidelines.push('- Keep paragraphs short (2-3 sentences max)');
     }
 
-    if (context.userPreferences.autism) {
+    if (context.userPreferences.explicitSteps) {
       guidelines.push('- Be explicit and literal, no ambiguity');
       guidelines.push('- Provide concrete examples, not abstract concepts');
       guidelines.push('- Clearly state what success looks like');
     }
 
-    if (context.userPreferences.dyslexia) {
+    if (context.userPreferences.plainLanguage) {
       guidelines.push('- Use plain language, avoid jargon');
       guidelines.push('- Keep sentences short and simple');
       guidelines.push('- Use consistent terminology');
@@ -413,7 +413,7 @@ Return ONLY the JSON object, no additional text.`;
       ? `\n\nExpected complexity: ${input.complexity}`
       : '';
 
-    return `You are an expert at breaking down programming tasks into manageable subtasks, with special consideration for neurodivergent developers.
+    return `You are an expert at breaking down programming tasks into manageable subtasks, with special consideration for developers with limited hand mobility or energy.
 
 TASK:
 "${input.task}"
@@ -442,7 +442,7 @@ Return a JSON object with this exact structure:
 
 Guidelines:
 - Each subtask should be completable in one sitting (15-60 minutes)
-- For ADHD preferences: aim for 15-30 minute chunks
+- For low-energy preferences: aim for 15-30 minute chunks
 - Dependencies should reference task IDs (empty array if no dependencies)
 - Descriptions should be specific and actionable
 - Order tasks logically by dependencies
@@ -460,19 +460,19 @@ Return ONLY the JSON object, no additional text.`;
       '- Identify dependencies between tasks',
     ];
 
-    if (preferences.adhd) {
+    if (preferences.lowEnergy) {
       guidelines.push('- Keep subtasks small (15-30 minutes each)');
-      guidelines.push('- Provide frequent completion points for dopamine hits');
-      guidelines.push('- Be realistic about time estimates (ADHD time blindness)');
+      guidelines.push('- Provide frequent completion points');
+      guidelines.push('- Be realistic about time estimates (long tasks are hard to judge)');
     }
 
-    if (preferences.autism) {
+    if (preferences.explicitSteps) {
       guidelines.push('- Make dependencies explicit and clear');
       guidelines.push('- Use consistent structure for all subtasks');
       guidelines.push('- Define clear success criteria for each task');
     }
 
-    if (preferences.dyslexia) {
+    if (preferences.plainLanguage) {
       guidelines.push('- Use simple, clear language in descriptions');
       guidelines.push('- Avoid technical jargon where possible');
       guidelines.push('- Keep descriptions concise');

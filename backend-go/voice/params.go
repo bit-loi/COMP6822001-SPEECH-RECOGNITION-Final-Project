@@ -106,6 +106,54 @@ const (
 )
 
 // ---------------------------------------------------------------------------
+// MFCC front end
+//
+// These reproduce the Python training call with python_speech_features, which is
+// the reference implementation (see mfcc.go):
+//
+//	numpy.hamming window, 25 ms / 10 ms, 26 mel filters over 0..8000 Hz,
+//	512-point FFT, pre-emphasis 0.97, cepstral lifter 22, c0 replaced by the
+//	frame log energy, then delta and delta-delta with N = 2.
+//
+//	features = mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01,
+//	                numcep=13, nfilt=26, nfft=512, lowfreq=0, highfreq=8000,
+//	                preemph=0.97, ceplifter=22, appendEnergy=True,
+//	                winfunc=numpy.hamming)
+//	delta    = mfcc_delta(psf.delta(features, 2), 2)
+//	stacked  = numpy.concatenate([features, delta, delta_delta], axis=1)
+//
+// Changing any of these without retraining breaks the classifier.
+// ---------------------------------------------------------------------------
+
+const (
+	// MFCCWindowMs / MFCCWindowSamples: analysis window length.
+	MFCCWindowMs      = 25
+	MFCCWindowSamples = SampleRate * MFCCWindowMs / 1000
+
+	// MFCCNumFilters is the number of triangular mel filters.
+	MFCCNumFilters = 26
+
+	// MFCCNFFT is the FFT size; frames shorter than it are zero-padded.
+	MFCCNFFT = 512
+
+	// MFCCHighFreqHz is the upper mel-filter edge (the Nyquist frequency).
+	MFCCHighFreqHz = SampleRate / 2
+
+	// MFCCPreEmphasis is the pre-emphasis coefficient (0 disables it).
+	MFCCPreEmphasis = 0.97
+
+	// MFCCLifter is the cepstral lifter coefficient (<= 0 disables it).
+	MFCCLifter = 22
+
+	// MFCCAppendEnergy replaces c0 with the log of the frame energy, exactly as
+	// python_speech_features does with appendEnergy=True.
+	MFCCAppendEnergy = true
+
+	// DeltaWidth N: delta/delta-delta use the N frames on each side.
+	DeltaWidth = 2
+)
+
+// ---------------------------------------------------------------------------
 // MFCC feature layout
 // ---------------------------------------------------------------------------
 

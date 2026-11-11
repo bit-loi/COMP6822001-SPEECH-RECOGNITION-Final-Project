@@ -10,7 +10,7 @@ from dependencies.auth import verify_user
 from fastapi import Depends
 app = FastAPI(
     title="AmbatuCode API",
-    description="Voice-to-code and AI Agent with memory for neurodivergent developers",
+    description="Voice-to-code and AI Agent with memory for developers recovering from hand injuries",
     version="2.0.0"
 )
 

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import {
-  defaultNeurodivergentSettings,
+  defaultAccessibilitySettings,
   saveSettings,
   loadSettings,
-  type NeurodivergentEditorSettings,
+  type AccessibilityEditorSettings,
 } from "@/lib/editorConfig";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -32,8 +32,8 @@ import { getTranslation, type Language } from "@/lib/translations";
 interface CustomizationsPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  settings: NeurodivergentEditorSettings;
-  onSettingsChange: (settings: NeurodivergentEditorSettings) => void;
+  settings: AccessibilityEditorSettings;
+  onSettingsChange: (settings: AccessibilityEditorSettings) => void;
 }
 
 type Section = "focus" | "reading" | "visual" | "pomodoro" | "panels" | "font" | "language";
@@ -49,13 +49,13 @@ const SECTIONS: SectionMeta[] = [
   {
     id: "focus",
     icon: <Brain className="w-4 h-4" />,
-    label: "Focus & ADHD",
+    label: "Focus & Low Energy",
     description: "Reduce distraction",
   },
   {
     id: "reading",
     icon: <Type className="w-4 h-4" />,
-    label: "Reading & Dyslexia",
+    label: "Reading Comfort",
     description: "Font & spacing",
   },
   {
@@ -172,9 +172,9 @@ export function CustomizationsPanel({
 }: CustomizationsPanelProps) {
   const [activeSection, setActiveSection] = useState<Section>("focus");
 
-  const update = <K extends keyof NeurodivergentEditorSettings>(
+  const update = <K extends keyof AccessibilityEditorSettings>(
     key: K,
-    value: NeurodivergentEditorSettings[K]
+    value: AccessibilityEditorSettings[K]
   ) => {
     const next = { ...settings, [key]: value };
     onSettingsChange(next);
@@ -184,8 +184,8 @@ export function CustomizationsPanel({
   const t = (key: string) => getTranslation(key, settings.uiLanguage as Language);
 
   const reset = () => {
-    onSettingsChange(defaultNeurodivergentSettings);
-    saveSettings(defaultNeurodivergentSettings);
+    onSettingsChange(defaultAccessibilitySettings);
+    saveSettings(defaultAccessibilitySettings);
   };
 
   return (
@@ -241,11 +241,11 @@ export function CustomizationsPanel({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-4 py-3">
-            {/* Focus & ADHD */}
+            {/* Focus & low energy */}
             {activeSection === "focus" && (
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">
-                  Focus & ADHD Support
+                  Focus & Low Energy Support
                 </p>
                 <SettingRow
                   label="Focus Mode"
@@ -277,15 +277,15 @@ export function CustomizationsPanel({
               </div>
             )}
 
-            {/* Reading & Dyslexia */}
+            {/* Reading comfort */}
             {activeSection === "reading" && (
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">
-                  Reading & Dyslexia
+                  Reading Comfort
                 </p>
                 <SettingRow
                   label="OpenDyslexic Font"
-                  description="Dyslexia-friendly font with weighted bottoms to prevent letter flipping."
+                  description="Readability font with weighted bottoms that reduce letter flipping."
                 >
                   <Switch
                     checked={settings.useDyslexicFont}
@@ -450,7 +450,7 @@ export function CustomizationsPanel({
                 </p>
                 <SliderRow
                   label="Editor Font Size"
-                  description="Larger text is easier to read for many neurodivergent users."
+                  description="Larger text is easier to read and reduces eye strain."
                   value={settings.fontSize}
                   min={11}
                   max={26}

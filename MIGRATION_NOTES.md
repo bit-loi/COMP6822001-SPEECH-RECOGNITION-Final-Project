@@ -250,3 +250,115 @@ output says nothing about what was spoken.
 - The script that produced `data/dataset.npz` (the training features) is **not in
   the repo**, so the training-side MFCC parameters could not be read from code. See
   the Phase 6 section for the parameters chosen and the matching Python call.
+
+## Phase 6: Go streaming pipeline
+
+Files added: `backend-go/voice/mfcc.go`, `backend-go/voice/mapper.go`,
+`backend-go/voice/stream.go`, `backend-go/handlers/voice.go`, plus the Go tests
+(`mfcc_test.go`, `mapper_test.go`, `stream_test.go`, `handlers/voice_test.go`) and
+`voice/testdata/` (golden vectors and their generator). `params.go` gained the
+MFCC parameter block; `main.go` wires the route and the classifier.
+
+### MFCC front end (`voice/mfcc.go`)
+Reproduces `python_speech_features` 0.6.1 followed by the repo's
+`pool_features()`:
+
+```python
+winfunc = numpy.hamming
+static = mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13,
+              nfilt=26, nfft=512, lowfreq=0, highfreq=8000, preemph=0.97,
+              ceplifter=22, appendEnergy=True, winfunc=winfunc)
+d1 = psf.delta(static, 2)
+d2 = psf.delta(d1, 2)
+stacked = numpy.concatenate([static, d1, d2], axis=1)   # 13 + 13 + 13
+pooled  = concat(mean(stacked, axis=0), std(stacked, axis=0))  # 78, std ddof=0
+```
+
+Implementation details that matter for bit-level parity:
+- framing is `framesig`: 400-sample window, 160-sample hop, final partial frame
+  zero-padded; a signal shorter than 400 samples yields one padded frame;
+- pre-emphasis on the whole signal before framing (`y[0]=x[0]`,
+  `y[i]=x[i]-0.97*x[i-1]`);
+- `numpy.hamming(400)` window, power spectrum `|rfft|^2 / 512`;
+- 26 triangular mel filters, `2595*log10(1+Hz/700)` spacing, bins
+  `floor(513*Hz/16000)`;
+- **0.6.1 floors a zero filterbank energy at `numpy.finfo(float).eps` before the
+  log** (and the frame energy too), so digital silence yields `log(eps)` rather
+  than infinities; the Go code does the same;
+- orthonormal DCT-II, lifter 22, `c0` replaced by the log frame energy;
+- deltas with N=2 twice, edge-replicated padding; pooling applies
+  `nan_to_num(nan/posinf/neginf = 0)` first.
+
+Parity is pinned by `voice/testdata/mfcc_golden.json` for five deterministic
+signals (white noise, quiet noise, 401 samples, exactly one frame, digital
+silence). `voice/testdata/generate_mfcc_golden.py` regenerates it with
+`python_speech_features` 0.6.1; the Go test compares the first feature frame to
+1e-9 relative and all 78 pooled values to 1e-5. **The training script is missing
+from the repo**, so the call above is an assumption: it uses the library defaults
+plus `numpy.hamming`. If retraining uses different parameters, change them in
+`params.go` only and regenerate the golden file.
+
+Samples are scaled `int16 / 32768` (`SampleScale` in `params.go`), i.e. full
+scale is +-1.0. This is part of the training contract because MFCC `c0` is a log
+energy.
+
+### Command mapper (`voice/mapper.go`)
+Behavioural port of `services/command_mapper.py`, reading the **same**
+`backend-python/services/command_map.json`:
+- decision order: `no_action` word, unknown label, below threshold, mapped;
+- threshold is inclusive and resolves explicit argument -> `AMBATUCODE_CONFIDENCE_THRESHOLD`
+  -> JSON -> 0.75; malformed/out-of-range values are errors;
+- labels are exact and case-sensitive; returned actions/params are copies;
+- `MapResult` JSON is identical to the Python pydantic shape (`action: null` when
+  there is no action).
+The file path resolves from `AMBATUCODE_COMMAND_MAP`, else by walking up from the
+working directory and the executable directory to
+`backend-python/services/command_map.json`, so `go run .` in `backend-go/` works.
+
+### Streaming pipeline (`voice/stream.go`)
+One `Streamer` per connection: PCM16LE bytes -> float samples -> 10 ms frames ->
+energy VAD -> utterance buffer -> MFCC/pooling -> `Classifier.Predict` ->
+`CommandMapper.MapOutput`. Details:
+- the last `PreRollFrames + VADStartFrames` frames are retained, so the 100 ms
+  pre-roll is available when the onset is only declared after 3 loud frames;
+- the classified segment is pre-roll + loud frames + 100 ms tail (not the full
+  300 ms hangover); a max-length utterance keeps everything it captured;
+- utterances shorter than `VADMinSpeechMs` are discarded silently;
+- `Flush()` classifies an utterance still in progress (reason `flush`);
+- a trailing odd PCM byte is carried over to the next message; partial frames are
+  held until complete;
+- extraction and classification errors are reported as events and do not kill the
+  connection.
+
+### WebSocket (`handlers/voice.go`, route `/ws/voice`)
+Uses the existing `/ws` upgrade middleware. Client -> server: binary messages of
+signed 16-bit little-endian mono PCM at 16 kHz (200-300 ms chunks recommended,
+hard limit 2 s / 64,000 bytes), and optionally the text control message
+`{"type":"flush"}`. Server -> client JSON:
+
+```json
+{"type":"ready","sample_rate":16000,"format":"pcm_s16le","frame_ms":10,"feature_dim":78,"confidence_threshold":0.75}
+{"type":"speech_start"}
+{"type":"result","label":"go","confidence":0.93,"top_k":[{"label":"go","confidence":0.93}],"inference_ms":0.5,"reason":"mapped","action":{"action":"execute_active_file","params":{}}}
+{"type":"error","message":"..."}
+```
+
+The frontend phase must send PCM, not the browser's default `AudioBuffer`
+float32. No audio is stored.
+
+### Wiring and configuration (`main.go`)
+- Classifier: the deterministic `StubClassifier` in hash mode by default. Setting
+  `AMBATUCODE_VOICE_SCRIPT=go,stop` switches to script mode, cycling those labels,
+  to demo specific actions before a model exists. A real model only needs to
+  implement `voice.Classifier` and be returned by `newVoiceClassifier()`.
+- `AMBATUCODE_COMMAND_MAP` and `AMBATUCODE_CONFIDENCE_THRESHOLD` behave as in the
+  Python mapper.
+- Startup fails fast if the command map is missing, so a typo in the path does not
+  silently disable the voice route.
+
+### Tests
+Go: 51 tests pass (`go test ./...`), `go build ./...` and `go vet ./...` clean.
+They cover the Python-parity golden vectors, framing/pooling, mapper semantics
+and validation, end-to-end streaming with a scripted stub, and a real WebSocket
+client against a Fiber test server (result, flush control, unknown control
+message). Python: 199 tests still pass.

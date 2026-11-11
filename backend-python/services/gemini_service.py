@@ -245,7 +245,7 @@ Return ONLY this JSON (no markdown):
         language: str,
         user_cognitive_needs: List[str] = []
     ) -> str:
-        """Explain code in neurodivergent-friendly way"""
+        """Explain code in a plain, low-effort way"""
         
         # Adapt explanation style based on cognitive needs
         style_instructions = ""
@@ -393,7 +393,7 @@ Types of important information:
 1. coding_pattern: User's coding preferences or patterns
 2. preference: General preferences about tools, style, etc
 3. project_context: Information about current project
-4. cognitive_need: User's neurodivergent needs or adaptations
+4. cognitive_need: User's accessibility needs or adaptations
 
 Return JSON:
 {{
