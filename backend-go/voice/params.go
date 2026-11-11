@@ -9,6 +9,103 @@
 package voice
 
 // ---------------------------------------------------------------------------
+// Audio on the wire
+// ---------------------------------------------------------------------------
+
+const (
+	// SampleRate is the rate (Hz) of the mono PCM stream clients must send.
+	SampleRate = 16000
+
+	// BytesPerSample: the wire format is signed 16-bit little-endian PCM.
+	BytesPerSample = 2
+
+	// SampleScale converts one int16 sample to the amplitude the feature
+	// extractor sees (full scale = +-1.0). This is part of the training
+	// contract: the MFCC c0 coefficient (log energy) shifts by a constant if the
+	// training pipeline used raw int16 values instead.
+	SampleScale = 1.0 / 32768.0
+
+	// Clients should send chunks of ChunkMsMin..ChunkMsMax milliseconds. The
+	// server re-frames internally, so any chunk length works, but messages
+	// larger than MaxMessageBytes (2 s of audio) are rejected.
+	ChunkMsMin      = 200
+	ChunkMsMax      = 300
+	MaxMessageBytes = 2 * SampleRate * BytesPerSample
+)
+
+// ---------------------------------------------------------------------------
+// Framing (shared by the VAD and the MFCC front end)
+// ---------------------------------------------------------------------------
+
+const (
+	// FrameHopMs is the analysis hop: the VAD takes one decision per hop and
+	// MFCC frames start every hop. 10 ms = 160 samples at 16 kHz.
+	FrameHopMs = 10
+	FrameHop   = SampleRate * FrameHopMs / 1000
+)
+
+// ---------------------------------------------------------------------------
+// Voice activity detection (energy based, no learned component)
+//
+// Every duration is a whole number of FrameHopMs hops. A "frame level" is the
+// mean-removed RMS of one hop in dBFS.
+// ---------------------------------------------------------------------------
+
+const (
+	// EnergyFloorDB is the level reported for digital silence.
+	EnergyFloorDB = -100.0
+
+	// VADStartMarginDB: a frame is "loud" when its level exceeds the tracked
+	// noise floor by more than this.
+	VADStartMarginDB = 12.0
+
+	// VADEndMarginDB: while in speech, a frame still counts as speech when it
+	// exceeds the noise floor by more than this. It is lower than the start
+	// margin on purpose (hysteresis) so decaying word endings are not clipped.
+	VADEndMarginDB = 6.0
+
+	// VADMinLevelDB is an absolute floor: nothing quieter than this is ever
+	// speech, however low the noise floor drops.
+	VADMinLevelDB = -45.0
+
+	// VADInitialNoiseDB is the noise-floor estimate before any audio is seen.
+	VADInitialNoiseDB = -60.0
+
+	// Per-frame smoothing of the noise-floor estimate, applied to quiet frames
+	// only (speech never raises the floor). It falls fast and rises slowly.
+	VADNoiseFallRate = 0.10
+	VADNoiseRiseRate = 0.01
+
+	// VADStartFrames is how many consecutive loud frames start an utterance.
+	VADStartFrames = 3
+
+	// VADHangoverMs of continuous quiet ends an utterance. It also bridges the
+	// short gaps inside a word, and is the dominant part of the delay between
+	// the speaker stopping and an action firing.
+	VADHangoverMs     = 300
+	VADHangoverFrames = VADHangoverMs / FrameHopMs
+
+	// VADMinSpeechMs: an utterance whose first-to-last loud frame span is
+	// shorter than this (a click or a cough) is discarded, not classified.
+	VADMinSpeechMs     = 100
+	VADMinSpeechFrames = VADMinSpeechMs / FrameHopMs
+
+	// VADMaxUtteranceMs force-ends an utterance that never goes quiet (a fan, a
+	// long monologue). After a forced end the VAD stays disarmed until it has
+	// seen VADHangoverMs of quiet, so a steady noise cannot re-trigger it.
+	VADMaxUtteranceMs     = 2000
+	VADMaxUtteranceFrames = VADMaxUtteranceMs / FrameHopMs
+
+	// PreRollMs of audio before the detected onset and TailMs after the last
+	// loud frame are kept for feature extraction, so the pooled statistics see a
+	// little context on both sides of the word.
+	PreRollMs     = 100
+	PreRollFrames = PreRollMs / FrameHopMs
+	TailMs        = 100
+	TailFrames    = TailMs / FrameHopMs
+)
+
+// ---------------------------------------------------------------------------
 // MFCC feature layout
 // ---------------------------------------------------------------------------
 
